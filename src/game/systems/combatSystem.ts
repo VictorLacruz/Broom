@@ -58,7 +58,6 @@ const normalizeAngle = (rad: number): number => {
 };
 
 const meleeHit = (ctx: GameContext, player: Transform, damage: number, range: number, arc: string, push: boolean): void => {
-  const yawOffset = arc === "right45" ? Math.PI / 4 : arc === "left45" ? -Math.PI / 4 : 0;
   const enemies = ctx.world.query(["enemy", "transform", "health"]);
 
   for (const entity of enemies) {
@@ -67,18 +66,23 @@ const meleeHit = (ctx: GameContext, player: Transform, damage: number, range: nu
     if (!target || !health) {
       continue;
     }
-    if (!isInsideMeleeArc(player, target, range, yawOffset)) {
-      continue;
-    }
-
     const dx = target.x - player.x;
     const dz = target.z - player.z;
-    const dist = Math.hypot(dx, dz) || 1;
+    const dist = Math.hypot(dx, dz);
+    if (dist > range) {
+      continue;
+    }
+    const safeDist = dist || 1;
     health.current -= damage;
+    const render = ctx.enemyMeshes.get(entity);
+    if (render) {
+      render.mesh.userData.hitAnimTimer = 0.22;
+    }
+    ctx.renderer.spawnHitEffect(target.x, 1.2, target.z);
 
     if (push) {
-      target.x += (dx / dist) * 2;
-      target.z += (dz / dist) * 2;
+      target.x += (dx / safeDist) * 2;
+      target.z += (dz / safeDist) * 2;
     }
     if (health.current <= 0) {
       killEnemy(ctx, entity);

@@ -5,11 +5,11 @@ import type { GameContext } from "./GameContext";
 import { generateLevelRooms } from "./systems/mapSystem";
 import { calculateWaveEnemyTotal } from "./systems/waveSystem";
 
-const ENEMY_RADIUS_BASE = 10;
+const ENEMY_RADIUS_BASE = 7;
 
 export const setupPlayerEntity = (ctx: GameContext): Entity => {
   const entity = ctx.world.createEntity();
-  ctx.world.addComponent<Transform>(entity, "transform", { x: 0, y: 1.8, z: 0, yaw: 0, pitch: 0 });
+  ctx.world.addComponent<Transform>(entity, "transform", { x: -72, y: 1.8, z: 0, yaw: 0, pitch: 0 });
   ctx.world.addComponent<Velocity>(entity, "velocity", { x: 0, y: 0, z: 0 });
   ctx.world.addComponent<Health>(entity, "health", { current: 300, max: 300 });
   ctx.world.addComponent<PlayerTag>(entity, "player", { isPlayer: true });
@@ -84,6 +84,11 @@ export const loadLevel = (ctx: GameContext, levelIndex: number): void => {
   ctx.runtime.currentLevel = level;
   ctx.runtime.waveIndex = 0;
   ctx.runtime.playerHasKey = false;
+  const player = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
+  if (player) {
+    player.x = -72;
+    player.z = 0;
+  }
 
   spawnKey(ctx, level);
   spawnDoor(ctx);
@@ -125,7 +130,7 @@ const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
 
 const spawnDoor = (ctx: GameContext): void => {
   ctx.internals.doorMesh = ctx.renderer.spawnDoor();
-  ctx.internals.doorMesh.position.set(125, 1.45, 0);
+  ctx.internals.doorMesh.position.set(95.2, 1.45, 0);
 };
 
 const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType => {
@@ -150,7 +155,7 @@ const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType
 const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: number): void => {
   const entity = ctx.world.createEntity();
   const angle = (idx / Math.max(total, 1)) * Math.PI * 2;
-  const radius = ENEMY_RADIUS_BASE + (idx % 6) * 2;
+  const radius = ENEMY_RADIUS_BASE + (idx % 5) * 1.8;
   const x = Math.cos(angle) * radius;
   const z = Math.sin(angle) * radius;
 

@@ -8,8 +8,13 @@ import key1Url from "../assets/sprites/items/keyfly_1.jpeg";
 import key2Url from "../assets/sprites/items/keyfly_2.jpeg";
 import key3Url from "../assets/sprites/items/keyfly_3.jpeg";
 import key4Url from "../assets/sprites/items/keyfly_4.jpeg";
+import hit01Url from "../assets/sprites/fx/hit01.png";
+import hit02Url from "../assets/sprites/fx/hit02.png";
+import hit03Url from "../assets/sprites/fx/hit03.png";
+import hit04Url from "../assets/sprites/fx/hit04.png";
+import hit05Url from "../assets/sprites/fx/hit05.png";
 
-type EnemyAnimState = "idle" | "run" | "attack";
+type EnemyAnimState = "idle" | "run" | "attack" | "hit";
 
 type AtlasStateConfig = {
   texture: THREE.Texture;
@@ -58,8 +63,10 @@ export class Renderer3D {
     doorClosed: THREE.Texture;
     doorOpen: THREE.Texture;
     keyFrames: THREE.Texture[];
+    hitFrames: THREE.Texture[];
   };
   private activeDoor: THREE.Sprite | null = null;
+  private readonly transientHitSprites: THREE.Sprite[] = [];
 
   constructor(private readonly mount: HTMLElement) {
     this.scene = new THREE.Scene();
@@ -79,7 +86,14 @@ export class Renderer3D {
       wall: this.loadTexture(dungeonWallUrl, 8, 2),
       doorClosed: this.loadSpriteTexture(doorClosedUrl),
       doorOpen: this.loadSpriteTexture(doorOpenUrl),
-      keyFrames: [this.loadSpriteTexture(key1Url), this.loadSpriteTexture(key2Url), this.loadSpriteTexture(key3Url), this.loadSpriteTexture(key4Url)]
+      keyFrames: [this.loadSpriteTexture(key1Url), this.loadSpriteTexture(key2Url), this.loadSpriteTexture(key3Url), this.loadSpriteTexture(key4Url)],
+      hitFrames: [
+        this.loadSpriteTexture(hit01Url),
+        this.loadSpriteTexture(hit02Url),
+        this.loadSpriteTexture(hit03Url),
+        this.loadSpriteTexture(hit04Url),
+        this.loadSpriteTexture(hit05Url)
+      ]
     };
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.72);
@@ -114,7 +128,8 @@ export class Renderer3D {
         {
           idle: this.makeAtlasState(enemySpriteUrl("wizard/wizard_idle.png"), 10, 1, 0, 10, 10),
           run: this.makeAtlasState(enemySpriteUrl("wizard/wizard_run.png"), 6, 1, 0, 12, 6),
-          attack: this.makeAtlasState(enemySpriteUrl("wizard/wizard_attack.png"), 40, 10, 0, 16, 40)
+          attack: this.makeAtlasState(enemySpriteUrl("wizard/wizard_attack.png"), 40, 10, 0, 16, 40),
+          hit: this.makeAtlasState(enemySpriteUrl("wizard/wizard_hit.png"), 10, 1, 0, 18, 10)
         },
         1.9,
         1.9
@@ -164,6 +179,15 @@ export class Renderer3D {
               enemySpriteUrl("skeleton/attack_14.png")
             ],
             14
+          ),
+          hit: this.makeFrameState(
+            [
+              enemySpriteUrl("skeleton/take hit_0.png"),
+              enemySpriteUrl("skeleton/take hit_1.png"),
+              enemySpriteUrl("skeleton/take hit_2.png"),
+              enemySpriteUrl("skeleton/take hit_3.png")
+            ],
+            18
           )
         },
         1.75,
@@ -174,7 +198,8 @@ export class Renderer3D {
         {
           idle: this.makeFrameState(loadFrameSequence("knight/frame", 0, 5), 8),
           run: this.makeFrameState(loadFrameSequence("knight/frame", 14, 21), 11),
-          attack: this.makeFrameState(loadFrameSequence("knight/frame", 35, 48), 14)
+          attack: this.makeFrameState(loadFrameSequence("knight/frame", 35, 48), 14),
+          hit: this.makeFrameState(loadFrameSequence("knight/frame", 7, 12), 16)
         },
         1.9,
         1.9
@@ -184,7 +209,8 @@ export class Renderer3D {
         {
           idle: this.makeAtlasState(enemySpriteUrl("goblin/goblin_sheet.png"), 8, 3, 0, 8, 8),
           run: this.makeAtlasState(enemySpriteUrl("goblin/goblin_sheet.png"), 8, 3, 1, 10, 8),
-          attack: this.makeAtlasState(enemySpriteUrl("goblin/goblin_sheet.png"), 8, 3, 2, 12, 8)
+          attack: this.makeAtlasState(enemySpriteUrl("goblin/goblin_sheet.png"), 8, 3, 2, 12, 8),
+          hit: this.makeAtlasState(enemySpriteUrl("goblin/goblin_sheet.png"), 8, 3, 2, 18, 8)
         },
         2.2,
         2.2
@@ -241,6 +267,43 @@ export class Renderer3D {
       mat.map = target;
       mat.opacity = open ? 0.72 : 1;
       mat.needsUpdate = true;
+    }
+  }
+
+  spawnHitEffect(x: number, y: number, z: number): void {
+    const mat = new THREE.SpriteMaterial({
+      map: this.textures.hitFrames[0],
+      transparent: true,
+      alphaTest: 0.15,
+      depthWrite: false
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(1.25, 1.25, 1);
+    sprite.center.set(0.5, 0.5);
+    sprite.position.set(x, y, z);
+    sprite.userData.hitFxStart = performance.now() / 1000;
+    sprite.userData.hitFxDuration = 0.16;
+    this.transientHitSprites.push(sprite);
+    this.scene.add(sprite);
+  }
+
+  updateHitEffects(time: number): void {
+    for (let i = this.transientHitSprites.length - 1; i >= 0; i -= 1) {
+      const sprite = this.transientHitSprites[i];
+      const start = sprite.userData.hitFxStart as number;
+      const duration = sprite.userData.hitFxDuration as number;
+      const t = (time - start) / duration;
+      if (t >= 1) {
+        this.scene.remove(sprite);
+        this.transientHitSprites.splice(i, 1);
+        continue;
+      }
+      const frame = Math.min(this.textures.hitFrames.length - 1, Math.floor(t * this.textures.hitFrames.length));
+      const mat = sprite.material as THREE.SpriteMaterial;
+      mat.map = this.textures.hitFrames[frame];
+      mat.opacity = 1 - t * 0.65;
+      mat.needsUpdate = true;
+      sprite.position.y += 0.003;
     }
   }
 

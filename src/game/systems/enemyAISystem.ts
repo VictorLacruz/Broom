@@ -1,6 +1,10 @@
 import type { Combat, EnemyTag, Health, Shield, Transform } from "../components";
 import type { GameContext } from "../GameContext";
+import { clampToWalkable, separateCircles } from "./collisionUtils";
 import { killEnemy } from "../worldActions";
+
+const ENEMY_RADIUS = 0.72;
+const PLAYER_RADIUS = 0.8;
 
 export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
   const playerTransform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
@@ -24,6 +28,7 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     const prevX = transform.x;
     const prevZ = transform.z;
     const attackTimer = Math.max(0, (render?.mesh.userData.attackAnimTimer as number | undefined) ?? 0);
+    const hitTimer = Math.max(0, (render?.mesh.userData.hitAnimTimer as number | undefined) ?? 0);
     combat.timer = Math.max(0, combat.timer - delta);
     if (enemy.burnTimer > 0) {
       enemy.burnTimer -= delta;
@@ -35,6 +40,11 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     }
 
     const distance = updateEnemySteering(enemy, transform, playerTransform, delta);
+    const clamped = clampToWalkable(transform.x, transform.z, ENEMY_RADIUS);
+    transform.x = clamped.x;
+    transform.z = clamped.z;
+    separateCircles(transform, playerTransform, ENEMY_RADIUS, PLAYER_RADIUS, 0.12, 0.88);
+
     if (distance <= combat.range && combat.timer <= 0) {
       if (shield.active) {
         shield.durability = Math.max(0, shield.durability - enemy.type.damage * 0.45);
@@ -48,18 +58,33 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     }
 
     const moved = Math.hypot(transform.x - prevX, transform.z - prevZ) > 0.001;
-    let animState: "idle" | "run" | "attack" = moved ? "run" : "idle";
+    let animState: "idle" | "run" | "attack" | "hit" = moved ? "run" : "idle";
     const nextAttackTimer = Math.max(0, attackTimer - delta);
+    const nextHitTimer = Math.max(0, hitTimer - delta);
     if (render) {
       render.mesh.userData.attackAnimTimer = nextAttackTimer;
+      render.mesh.userData.hitAnimTimer = nextHitTimer;
     }
     if (nextAttackTimer > 0) {
       animState = "attack";
     }
+    if (nextHitTimer > 0) {
+      animState = "hit";
+    }
     const setEnemyAnimState = render?.mesh.userData.setEnemyAnimState as
-      | ((state: "idle" | "run" | "attack") => void)
+      | ((state: "idle" | "run" | "attack" | "hit") => void)
       | undefined;
     setEnemyAnimState?.(animState);
+  }
+
+  for (let i = 0; i < enemies.length; i += 1) {
+    const a = ctx.world.getComponent<Transform>(enemies[i], "transform");
+    if (!a) continue;
+    for (let j = i + 1; j < enemies.length; j += 1) {
+      const b = ctx.world.getComponent<Transform>(enemies[j], "transform");
+      if (!b) continue;
+      separateCircles(a, b, ENEMY_RADIUS, ENEMY_RADIUS, 0.5, 0.5);
+    }
   }
   ctx.runtime.shieldDurability = shield.durability;
 };

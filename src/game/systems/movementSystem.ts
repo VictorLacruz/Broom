@@ -1,10 +1,12 @@
 import type { Shield, Transform, Velocity } from "../components";
 import type { GameContext } from "../GameContext";
 import type { InputState } from "../state";
+import { clampToWalkable, separateCircles } from "./collisionUtils";
 
 const PLAYER_SPEED = 8;
 const DASH_DURATION = 0.15;
-const MAP_LIMIT = 145;
+const PLAYER_RADIUS = 0.8;
+const ENEMY_RADIUS = 0.72;
 
 export const runPlayerMovementSystem = (ctx: GameContext, input: InputState, delta: number): void => {
   const transform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
@@ -25,9 +27,17 @@ export const runPlayerMovementSystem = (ctx: GameContext, input: InputState, del
   const dashSpeed = ctx.config.abilities.level4.dashShield.distance / DASH_DURATION;
   const speed = ctx.internals.dashTimer > 0 ? dashSpeed : PLAYER_SPEED;
   updatePlayerMovement(transform, velocity, input, speed, delta);
+  const clamped = clampToWalkable(transform.x, transform.z, PLAYER_RADIUS);
+  transform.x = clamped.x;
+  transform.z = clamped.z;
 
-  transform.x = Math.max(-MAP_LIMIT, Math.min(MAP_LIMIT, transform.x));
-  transform.z = Math.max(-MAP_LIMIT, Math.min(MAP_LIMIT, transform.z));
+  for (const entity of ctx.world.query(["enemy", "transform"])) {
+    const enemyTransform = ctx.world.getComponent<Transform>(entity, "transform");
+    if (!enemyTransform) {
+      continue;
+    }
+    separateCircles(transform, enemyTransform, PLAYER_RADIUS, ENEMY_RADIUS, 0.9, 0.1);
+  }
 
   if (ctx.runtime.levelIndex >= 1) {
     const regen = ctx.config.abilities.level2.shield.regenRate;

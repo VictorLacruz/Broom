@@ -32,6 +32,11 @@ export const runProjectileSystem = (ctx: GameContext, delta: number): void => {
       }
 
       health.current -= projectile.damage;
+      const render = ctx.enemyMeshes.get(entity);
+      if (render) {
+        render.mesh.userData.hitAnimTimer = 0.22;
+      }
+      ctx.renderer.spawnHitEffect(transform.x, 1.2, transform.z);
       if (projectile.burnDuration > 0) {
         enemy.burnTimer = projectile.burnDuration;
       }
@@ -50,4 +55,3 @@ export const runProjectileSystem = (ctx: GameContext, delta: number): void => {
     ctx.projectiles.splice(idx, 1);
   }
 };
-

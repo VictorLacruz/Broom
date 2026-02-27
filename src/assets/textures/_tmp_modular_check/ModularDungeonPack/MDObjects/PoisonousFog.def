@@ -1,0 +1,5 @@
+mtl Material::Fog
+shader legacy_tex
+depthwrite false
+blend add
+texstopanim 5 5 25 .4

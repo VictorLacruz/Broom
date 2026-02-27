@@ -20,4 +20,5 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
   }
 
   ctx.renderer.setDoorOpen(ctx.runtime.playerHasKey);
+  ctx.renderer.updateHitEffects(time);
 };

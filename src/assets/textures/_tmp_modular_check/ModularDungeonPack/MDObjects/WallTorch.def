@@ -1,0 +1,9 @@
+mtl Material::Fire
+shader legacy_tex
+depthwrite false
+blend add
+texstopanim 3 3 9 .3
+mtl Material::Light
+shader legacy_tex
+depthwrite false
+blend add
