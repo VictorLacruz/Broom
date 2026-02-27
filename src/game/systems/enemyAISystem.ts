@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import type { Combat, EnemyTag, Health, Shield, Transform } from "../components";
 import type { GameContext } from "../GameContext";
 import { clampToWalkable, separateCircles } from "./collisionUtils";

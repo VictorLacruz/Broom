@@ -1,4 +1,4 @@
-import type { Transform } from "../components";
+import type { Shield, Transform } from "../components";
 import type { GameContext } from "../GameContext";
 
 export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
@@ -19,6 +19,13 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
     animateKey?.(time);
   }
 
+  const playerTransform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
+  const playerShield = ctx.world.getComponent<Shield>(ctx.playerEntity, "shield");
+  if (playerTransform && playerShield) {
+    ctx.renderer.setShieldSprite(playerShield.active, playerTransform.x, playerTransform.z, time);
+  }
+
   ctx.renderer.setDoorOpen(ctx.runtime.playerHasKey);
   ctx.renderer.updateHitEffects(time);
+  ctx.renderer.updateAttackEffects(time);
 };
