@@ -3,7 +3,6 @@ import dungeonStoneFloorLayout01Url from "../assets/textures/dungeon/stone_floor
 import dungeonFloor02Url from "../assets/textures/dungeon/floor02.png";
 import dungeonWallTileSetUrl from "../assets/textures/dungeon/dungeon_tile_set_wall.png";
 import doorClosedUrl from "../assets/sprites/items/door_closed.jpeg";
-import doorOpenUrl from "../assets/sprites/items/door_open.jpeg";
 import key1Url from "../assets/sprites/items/keyfly_1.jpeg";
 import key2Url from "../assets/sprites/items/keyfly_2.jpeg";
 import key3Url from "../assets/sprites/items/keyfly_3.jpeg";
@@ -61,7 +60,6 @@ export class Renderer3D {
     ceiling: THREE.Texture;
     walls: THREE.Texture[];
     doorClosed: THREE.Texture;
-    doorOpen: THREE.Texture;
     keyFrames: THREE.Texture[];
     hitFrames: THREE.Texture[];
   };
@@ -85,7 +83,6 @@ export class Renderer3D {
       ceiling: this.loadTexture(dungeonFloor02Url, 24, 24),
     walls: [this.loadTexture(dungeonWallTileSetUrl, 2, 1)],
       doorClosed: this.loadSpriteTexture(doorClosedUrl),
-      doorOpen: this.loadSpriteTexture(doorOpenUrl),
       keyFrames: [this.loadSpriteTexture(key1Url), this.loadSpriteTexture(key2Url), this.loadSpriteTexture(key3Url), this.loadSpriteTexture(key4Url)],
       hitFrames: [
         this.loadSpriteTexture(hit01Url),
@@ -258,15 +255,15 @@ export class Renderer3D {
     return sprite;
   }
 
-  setDoorOpen(open: boolean): void {
+  setDoorOpen(_open: boolean): void {
     if (!this.activeDoor) {
       return;
     }
     const mat = this.activeDoor.material as THREE.SpriteMaterial;
-    const target = open ? this.textures.doorOpen : this.textures.doorClosed;
+    const target = this.textures.doorClosed;
     if (mat.map !== target) {
       mat.map = target;
-      mat.opacity = open ? 0.72 : 1;
+      mat.opacity = 1;
       mat.needsUpdate = true;
     }
   }

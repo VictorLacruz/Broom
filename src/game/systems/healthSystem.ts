@@ -8,7 +8,9 @@ export const runHealthSystem = (ctx: GameContext): void => {
   }
 
   if (ctx.frameInput.heal) {
-    health.current = health.max;
+    health.max = 3000;
+    health.current = 3000;
+    ctx.runtime.playerMaxHealth = 3000;
   }
 
   ctx.runtime.playerHealth = health.current;
