@@ -1,4 +1,5 @@
 import type { GameRuntimeState } from "../game/state";
+import grassTextureUrl from "../assets/textures/terrain/ground_grass.png";
 
 export class HUD {
   private readonly root: HTMLElement;
@@ -13,6 +14,8 @@ export class HUD {
   private readonly keyIconEl: HTMLElement;
   private readonly loadingEl: HTMLElement;
   private readonly messageEl: HTMLElement;
+  private readonly minimapTextureImage: HTMLImageElement;
+  private minimapPattern: CanvasPattern | null = null;
 
   constructor(parent: HTMLElement) {
     this.root = document.createElement("div");
@@ -24,6 +27,15 @@ export class HUD {
     this.minimapCanvas.width = 160;
     this.minimapCanvas.height = 100;
     this.minimapEl.appendChild(this.minimapCanvas);
+    this.minimapTextureImage = new Image();
+    this.minimapTextureImage.src = grassTextureUrl;
+    this.minimapTextureImage.onload = () => {
+      const ctx = this.minimapCanvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      this.minimapPattern = ctx.createPattern(this.minimapTextureImage, "repeat");
+    };
 
     const bottomLeft = this.block("hud-bottom-left", "");
     this.healthTextEl = document.createElement("div");
@@ -74,10 +86,13 @@ export class HUD {
 
     if (state.gameOver) {
       this.messageEl.textContent = "Derrota";
+      this.messageEl.style.display = "block";
     } else if (state.victory) {
       this.messageEl.textContent = "Victoria";
+      this.messageEl.style.display = "block";
     } else {
-      this.messageEl.textContent = `${state.currentLevel.name} - Ola ${state.waveIndex + 1}`;
+      this.messageEl.textContent = "";
+      this.messageEl.style.display = "none";
     }
 
     this.drawMinimap(state);
@@ -90,7 +105,13 @@ export class HUD {
     }
 
     ctx.clearRect(0, 0, this.minimapCanvas.width, this.minimapCanvas.height);
-    ctx.fillStyle = "#1f2d3c";
+    if (this.minimapPattern) {
+      ctx.fillStyle = this.minimapPattern;
+    } else {
+      ctx.fillStyle = "#1f2d3c";
+    }
+    ctx.fillRect(0, 0, this.minimapCanvas.width, this.minimapCanvas.height);
+    ctx.fillStyle = "rgba(12, 24, 32, 0.58)";
     ctx.fillRect(0, 0, this.minimapCanvas.width, this.minimapCanvas.height);
 
     const rooms = state.currentLevel.rooms;
@@ -103,16 +124,21 @@ export class HUD {
     const spanZ = Math.max(1, maxZ - minZ);
 
     for (const room of rooms) {
-      const x = ((room.coords[0] - minX) / spanX) * 130 + 10;
-      const z = ((room.coords[1] - minZ) / spanZ) * 70 + 12;
+      const x = ((room.coords[0] - minX) / spanX) * 126 + 12;
+      const z = ((room.coords[1] - minZ) / spanZ) * 66 + 14;
       const w = Math.max(16, Math.sqrt(room.area) * 1.5);
       const h = Math.max(10, Math.sqrt(room.area));
 
-      ctx.fillStyle = room.id === state.currentLevel.keyRoomId ? "#f9a825" : "#90a4ae";
+      ctx.fillStyle = room.id === state.currentLevel.keyRoomId ? "#f59e0b" : "#8aa7b8";
       ctx.fillRect(x, z, w, h);
       ctx.strokeStyle = "#0e141a";
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(x, z, w, h);
     }
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, this.minimapCanvas.width - 2, this.minimapCanvas.height - 2);
   }
 
   private block(className: string, text: string): HTMLElement {

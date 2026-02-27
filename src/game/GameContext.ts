@@ -6,7 +6,7 @@ import type { EnemyType } from "../data/types";
 import type { GameConfigBundle, GameRuntimeState, InputState } from "./state";
 
 export interface EnemyRender {
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
 }
 
 export interface Projectile {
@@ -36,4 +36,3 @@ export interface GameContext {
   frameInput: InputState;
   internals: GameInternals;
 }
-

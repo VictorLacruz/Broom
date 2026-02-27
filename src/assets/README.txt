@@ -13,3 +13,12 @@ Archivos activos:
 - src/assets/textures/terrain/key_water.png
 - src/assets/textures/terrain/projectile_water.png
 - src/assets/textures/terrain/LICENSE.txt
+
+Modelos:
+- Fuente: https://pierre-vandermaesen.itch.io/basic-low-poly-character
+- Asset: "Basic Low Poly Character" (archivo `basicMan.fbx`)
+- Autor: Pierre Vandermaesen
+- Licencia: CC BY 4.0
+
+Archivos activos:
+- src/assets/models/itch_basicman.fbx

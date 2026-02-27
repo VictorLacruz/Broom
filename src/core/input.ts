@@ -36,7 +36,7 @@ export class InputController {
   }
 
   consumeState(): InputState {
-    const forward = (this.keys.has("KeyW") ? 1 : 0) + (this.keys.has("KeyS") ? -1 : 0);
+    const forward = (this.keys.has("KeyW") ? -1 : 0) + (this.keys.has("KeyS") ? 1 : 0);
     const right = (this.keys.has("KeyD") ? 1 : 0) + (this.keys.has("KeyA") ? -1 : 0);
 
     const snapshot: InputState = {

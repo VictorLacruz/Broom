@@ -152,8 +152,7 @@ const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: numbe
 
   const color =
     type.type === "campesino" ? "#7cb342" : type.type === "caballero" ? "#9e9e9e" : type.type === "goblin" ? "#00acc1" : "#ab47bc";
-  const mesh = ctx.renderer.spawnEnemy(color);
+  const mesh = ctx.renderer.spawnEnemy(type.type, color);
   mesh.position.set(x, 1, z);
   ctx.enemyMeshes.set(entity, { mesh });
 };
-
