@@ -22,10 +22,11 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
   const playerTransform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
   const playerShield = ctx.world.getComponent<Shield>(ctx.playerEntity, "shield");
   if (playerTransform && playerShield) {
-    const showShieldSprite = ctx.frameInput.shield || playerShield.active;
+    const showShieldSprite = playerShield.active;
     const shieldX = playerTransform.x + Math.sin(playerTransform.yaw) * 1.0;
+    const shieldY = playerTransform.y;
     const shieldZ = playerTransform.z + Math.cos(playerTransform.yaw) * 1.0;
-    ctx.renderer.setShieldSprite(showShieldSprite, shieldX, shieldZ, time);
+    ctx.renderer.setShieldSprite(showShieldSprite, shieldX, shieldY, shieldZ, time);
   }
 
   ctx.renderer.setDoorOpen(ctx.runtime.playerHasKey);

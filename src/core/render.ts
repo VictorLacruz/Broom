@@ -322,7 +322,7 @@ export class Renderer3D {
     return mesh;
   }
 
-  setShieldSprite(active: boolean, x: number, z: number, time: number): void {
+  setShieldSprite(active: boolean, x: number, y: number, z: number, time: number): void {
     if (!active) {
       if (this.activeShield) {
         this.scene.remove(this.activeShield);
@@ -342,7 +342,7 @@ export class Renderer3D {
       this.activeShield.center.set(0.5, 0.5);
       this.scene.add(this.activeShield);
     }
-    this.activeShield.position.set(x, 1.35 + Math.sin(time * 6) * 0.05, z);
+    this.activeShield.position.set(x, y, z);
     const shieldMat = this.activeShield.material as THREE.SpriteMaterial;
     shieldMat.opacity = 0.82 + Math.sin(time * 9) * 0.08;
     shieldMat.needsUpdate = true;
