@@ -1,0 +1,6 @@
+[
+  { "type": "campesino", "hp": 120, "maxHp": 120, "damage": 30, "speed": 0.5, "behavior": "melee_direct" },
+  { "type": "caballero", "hp": 300, "maxHp": 300, "damage": 60, "speed": 1.0, "behavior": "melee_direct" },
+  { "type": "goblin", "hp": 120, "maxHp": 120, "damage": 30, "speed": 1.6, "behavior": "flank" },
+  { "type": "mago", "hp": 240, "maxHp": 240, "damage": 60, "speed": 1.0, "behavior": "ranged_keep_distance" }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "levelIndex": 1,
+    "name": "Nivel 1",
+    "arenaShape": "rectangle",
+    "rooms": [
+      { "id": "L1-R1", "shape": "square", "area": 64, "coords": [-32, 0], "hasKey": false },
+      { "id": "L1-R2", "shape": "rectangle", "area": 72, "coords": [8, -24], "hasKey": false },
+      { "id": "L1-R3", "shape": "L", "area": 68, "coords": [44, 8], "hasKey": true },
+      { "id": "L1-R4", "shape": "rectangle", "area": 60, "coords": [6, 34], "hasKey": false }
+    ],
+    "keyRoomId": "L1-R3",
+    "waves": [
+      { "waveIndex": 1, "enemies": [{ "type": "campesino", "count": 13 }] },
+      { "waveIndex": 2, "enemies": [{ "type": "campesino", "count": 15 }] },
+      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 17 }] }
+    ],
+    "spawnRates": { "campesino": 1.0, "caballero": 0.0, "goblin": 0.0, "mago": 0.0 }
+  },
+  {
+    "levelIndex": 2,
+    "name": "Nivel 2",
+    "arenaShape": "square",
+    "rooms": [
+      { "id": "L2-R1", "shape": "square", "area": 78, "coords": [0, 0], "hasKey": false },
+      { "id": "L2-R2", "shape": "H", "area": 78, "coords": [78, 0], "hasKey": true },
+      { "id": "L2-R3", "shape": "square", "area": 78, "coords": [156, 0], "hasKey": false }
+    ],
+    "keyRoomId": "L2-R2",
+    "waves": [
+      { "waveIndex": 1, "enemies": [{ "type": "campesino", "count": 10 }, { "type": "caballero", "count": 3 }] },
+      { "waveIndex": 2, "enemies": [{ "type": "campesino", "count": 11 }, { "type": "caballero", "count": 4 }] },
+      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 12 }, { "type": "caballero", "count": 5 }, { "type": "goblin", "count": 1 }] }
+    ],
+    "spawnRates": { "campesino": 0.7, "caballero": 0.29, "goblin": 0.01, "mago": 0.0 }
+  },
+  {
+    "levelIndex": 3,
+    "name": "Nivel 3",
+    "arenaShape": "oval",
+    "rooms": [
+      { "id": "L3-R1", "shape": "oval", "area": 101, "coords": [0, 0], "hasKey": false },
+      { "id": "L3-R2", "shape": "rectangle", "area": 101, "coords": [101, 0], "hasKey": true },
+      { "id": "L3-R3", "shape": "circle", "area": 101, "coords": [202, 0], "hasKey": false }
+    ],
+    "keyRoomId": "L3-R2",
+    "waves": [
+      { "waveIndex": 1, "enemies": [{ "type": "campesino", "count": 8 }, { "type": "caballero", "count": 4 }, { "type": "goblin", "count": 2 }] },
+      { "waveIndex": 2, "enemies": [{ "type": "campesino", "count": 9 }, { "type": "caballero", "count": 5 }, { "type": "goblin", "count": 2 }] },
+      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 10 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }] }
+    ],
+    "spawnRates": { "campesino": 0.5, "caballero": 0.3, "goblin": 0.15, "mago": 0.05 }
+  },
+  {
+    "levelIndex": 4,
+    "name": "Nivel 4",
+    "arenaShape": "H",
+    "rooms": [
+      { "id": "L4-R1", "shape": "H", "area": 131, "coords": [0, 0], "hasKey": false },
+      { "id": "L4-R2", "shape": "rectangle", "area": 131, "coords": [131, 0], "hasKey": true },
+      { "id": "L4-R3", "shape": "L", "area": 131, "coords": [262, 0], "hasKey": false }
+    ],
+    "keyRoomId": "L4-R2",
+    "waves": [
+      { "waveIndex": 1, "enemies": [{ "type": "campesino", "count": 7 }, { "type": "caballero", "count": 5 }, { "type": "goblin", "count": 2 }, { "type": "mago", "count": 1 }] },
+      { "waveIndex": 2, "enemies": [{ "type": "campesino", "count": 7 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }, { "type": "mago", "count": 1 }] },
+      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 8 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }, { "type": "mago", "count": 2 }] },
+      { "waveIndex": 4, "enemies": [{ "type": "campesino", "count": 9 }, { "type": "caballero", "count": 7 }, { "type": "goblin", "count": 4 }, { "type": "mago", "count": 2 }] }
+    ],
+    "spawnRates": { "campesino": 0.4, "caballero": 0.35, "goblin": 0.15, "mago": 0.1 }
+  }
+]
