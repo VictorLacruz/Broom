@@ -22,7 +22,7 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
   const playerTransform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
   const playerShield = ctx.world.getComponent<Shield>(ctx.playerEntity, "shield");
   if (playerTransform && playerShield) {
-    const showShieldSprite = ctx.frameInput.shield;
+    const showShieldSprite = ctx.frameInput.shield || playerShield.active;
     const shieldX = playerTransform.x + Math.sin(playerTransform.yaw) * 1.0;
     const shieldZ = playerTransform.z + Math.cos(playerTransform.yaw) * 1.0;
     ctx.renderer.setShieldSprite(showShieldSprite, shieldX, shieldZ, time);
