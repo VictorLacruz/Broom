@@ -1,11 +1,5 @@
 import type { Transform } from "../components";
-
-type Rect = {
-  minX: number;
-  maxX: number;
-  minZ: number;
-  maxZ: number;
-};
+import { DOOR_COLLIDER, type Rect } from "../worldGeometry";
 
 const WALKABLE_RECTS: Rect[] = [
   { minX: -98, maxX: -44, minZ: -26, maxZ: 26 },
@@ -14,6 +8,7 @@ const WALKABLE_RECTS: Rect[] = [
   { minX: -48, maxX: -24, minZ: -5.5, maxZ: 5.5 },
   { minX: 24, maxX: 48, minZ: -5.5, maxZ: 5.5 }
 ];
+const BLOCKING_RECTS: Rect[] = [DOOR_COLLIDER];
 
 const clamp = (v: number, min: number, max: number): number => Math.max(min, Math.min(max, v));
 
@@ -30,7 +25,7 @@ export const clampToWalkable = (x: number, z: number, radius: number): { x: numb
 
   for (const r of insetRects) {
     if (isInsideRect(x, z, r)) {
-      return { x, z };
+      return resolveBlockingRects(x, z, radius);
     }
   }
 
@@ -45,7 +40,42 @@ export const clampToWalkable = (x: number, z: number, radius: number): { x: numb
       best = { x: cx, z: cz };
     }
   }
-  return best;
+  return resolveBlockingRects(best.x, best.z, radius);
+};
+
+const resolveBlockingRects = (x: number, z: number, radius: number): { x: number; z: number } => {
+  let px = x;
+  let pz = z;
+
+  for (const rect of BLOCKING_RECTS) {
+    const expanded = {
+      minX: rect.minX - radius,
+      maxX: rect.maxX + radius,
+      minZ: rect.minZ - radius,
+      maxZ: rect.maxZ + radius
+    };
+    if (!isInsideRect(px, pz, expanded)) {
+      continue;
+    }
+
+    const outLeft = Math.abs(px - expanded.minX);
+    const outRight = Math.abs(expanded.maxX - px);
+    const outTop = Math.abs(pz - expanded.minZ);
+    const outBottom = Math.abs(expanded.maxZ - pz);
+    const minPush = Math.min(outLeft, outRight, outTop, outBottom);
+
+    if (minPush === outLeft) {
+      px = expanded.minX;
+    } else if (minPush === outRight) {
+      px = expanded.maxX;
+    } else if (minPush === outTop) {
+      pz = expanded.minZ;
+    } else {
+      pz = expanded.maxZ;
+    }
+  }
+
+  return { x: px, z: pz };
 };
 
 export const separateCircles = (

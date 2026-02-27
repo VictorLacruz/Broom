@@ -43,6 +43,7 @@ export class BroomGame {
         projectile: false,
         dash: false,
         interact: false,
+        heal: false,
         mouseDeltaX: 0,
         mouseDeltaY: 0
       },

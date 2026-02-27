@@ -10,6 +10,7 @@ export class InputController {
     projectile: false,
     dash: false,
     interact: false,
+    heal: false,
     mouseDeltaX: 0,
     mouseDeltaY: 0
   };
@@ -47,6 +48,7 @@ export class InputController {
       projectile: this.state.projectile,
       dash: this.state.dash,
       interact: this.state.interact,
+      heal: this.state.heal,
       mouseDeltaX: this.state.mouseDeltaX,
       mouseDeltaY: this.state.mouseDeltaY
     };
@@ -54,6 +56,7 @@ export class InputController {
     this.state.projectile = false;
     this.state.dash = false;
     this.state.interact = false;
+    this.state.heal = false;
     this.state.mouseDeltaX = 0;
     this.state.mouseDeltaY = 0;
 
@@ -70,6 +73,9 @@ export class InputController {
     }
     if (ev.code === "KeyF") {
       this.state.interact = true;
+    }
+    if (ev.code === "KeyH") {
+      this.state.heal = true;
     }
   };
 

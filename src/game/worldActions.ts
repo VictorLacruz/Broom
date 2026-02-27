@@ -2,15 +2,13 @@ import type { Entity } from "../core/ecs";
 import type { EnemyType, LevelConfig } from "../data/types";
 import type { Combat, EnemyTag, Health, KeyItem, PlayerTag, Shield, Transform, Velocity } from "./components";
 import type { GameContext } from "./GameContext";
+import { DOOR_POSITION } from "./worldGeometry";
 import { generateLevelRooms } from "./systems/mapSystem";
 import { calculateWaveEnemyTotal } from "./systems/waveSystem";
 
 const ENEMY_RADIUS_BASE = 7;
 const MIDDLE_ROOM_CENTER_X = 0;
 const MIDDLE_ROOM_CENTER_Z = 0;
-const BACK_WALL_DOOR_X = 99.2;
-const BACK_WALL_DOOR_Y = 0.18;
-const BACK_WALL_DOOR_Z = 0;
 
 export const setupPlayerEntity = (ctx: GameContext): Entity => {
   const entity = ctx.world.createEntity();
@@ -141,7 +139,7 @@ export const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
 
 const spawnDoor = (ctx: GameContext): void => {
   ctx.internals.doorMesh = ctx.renderer.spawnDoor();
-  ctx.internals.doorMesh.position.set(BACK_WALL_DOOR_X, BACK_WALL_DOOR_Y, BACK_WALL_DOOR_Z);
+  ctx.internals.doorMesh.position.set(DOOR_POSITION.x, DOOR_POSITION.y, DOOR_POSITION.z);
 };
 
 const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType => {

@@ -13,6 +13,7 @@ export interface InputState {
   projectile: boolean;
   dash: boolean;
   interact: boolean;
+  heal: boolean;
   mouseDeltaX: number;
   mouseDeltaY: number;
 }
