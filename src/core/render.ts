@@ -233,9 +233,10 @@ export class Renderer3D {
     sprite.scale.set(1.1, 1.1, 1);
     sprite.center.set(0.5, 0.15);
     sprite.userData.animateKeySprite = (time: number): void => {
-      const frame = Math.floor(time * 8) % this.textures.keyFrames.length;
-      mat.map = this.textures.keyFrames[frame];
-      mat.needsUpdate = true;
+      if (mat.map !== this.textures.keyFrames[0]) {
+        mat.map = this.textures.keyFrames[0];
+        mat.needsUpdate = true;
+      }
       sprite.position.y = 1.15 + Math.sin(time * 3) * 0.16;
     };
     this.scene.add(sprite);

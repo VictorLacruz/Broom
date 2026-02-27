@@ -6,6 +6,11 @@ import { generateLevelRooms } from "./systems/mapSystem";
 import { calculateWaveEnemyTotal } from "./systems/waveSystem";
 
 const ENEMY_RADIUS_BASE = 7;
+const MIDDLE_ROOM_CENTER_X = 0;
+const MIDDLE_ROOM_CENTER_Z = 0;
+const BACK_WALL_DOOR_X = 99.2;
+const BACK_WALL_DOOR_Y = 0.18;
+const BACK_WALL_DOOR_Z = 0;
 
 export const setupPlayerEntity = (ctx: GameContext): Entity => {
   const entity = ctx.world.createEntity();
@@ -117,13 +122,13 @@ export const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
     return;
   }
   const fallbackIdx = Math.floor(level.rooms.length / 2);
-  const room = level.rooms.find((entry) => entry.id === level.keyRoomId) ?? level.rooms[fallbackIdx];
+  const room = level.rooms[fallbackIdx] ?? level.rooms[0];
   const keyEntity = ctx.world.createEntity();
 
   ctx.world.addComponent<Transform>(keyEntity, "transform", {
-    x: room.coords[0],
+    x: MIDDLE_ROOM_CENTER_X,
     y: 1.2,
-    z: room.coords[1],
+    z: MIDDLE_ROOM_CENTER_Z,
     yaw: 0,
     pitch: 0
   });
@@ -131,12 +136,12 @@ export const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
 
   ctx.internals.keyEntity = keyEntity;
   ctx.internals.keyMesh = ctx.renderer.spawnKey();
-  ctx.internals.keyMesh.position.set(room.coords[0], 1.2, room.coords[1]);
+  ctx.internals.keyMesh.position.set(MIDDLE_ROOM_CENTER_X, 1.2, MIDDLE_ROOM_CENTER_Z);
 };
 
 const spawnDoor = (ctx: GameContext): void => {
   ctx.internals.doorMesh = ctx.renderer.spawnDoor();
-  ctx.internals.doorMesh.position.set(95.2, 0.18, 0);
+  ctx.internals.doorMesh.position.set(BACK_WALL_DOOR_X, BACK_WALL_DOOR_Y, BACK_WALL_DOOR_Z);
 };
 
 const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType => {
