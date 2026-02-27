@@ -11,6 +11,7 @@ const ROOM_HALF = 28;
 const CORRIDOR_HALF_W = 9;
 const CORRIDOR_HALF_L = 10;
 const DOOR_HALF_W = 2.3;
+const CONNECTOR_OVERLAP = 2;
 
 export const getArenaLayout = (levelIndex: number): ArenaLayout => {
   if (levelIndex === 2) {
@@ -80,9 +81,9 @@ export const getWalkableRects = (levelIndex: number): Rect[] => {
     const corridor2: Rect = {
       minX: -CORRIDOR_HALF_W,
       maxX: CORRIDOR_HALF_W,
-      // Keep an overlap with room2 after radius inset so corridor entrance stays passable.
-      minZ: 34 - CORRIDOR_HALF_L,
-      maxZ: 36 + CORRIDOR_HALF_L
+      // Extend both ends so room<->corridor transitions stay passable after radius inset.
+      minZ: 36 - CORRIDOR_HALF_L - CONNECTOR_OVERLAP,
+      maxZ: 36 + CORRIDOR_HALF_L + CONNECTOR_OVERLAP
     };
     return [room1, room2, room3, corridor1, corridor2];
   }
@@ -97,16 +98,16 @@ export const getWalkableRects = (levelIndex: number): Rect[] => {
     const corridor2: Rect = {
       minX: -CORRIDOR_HALF_W,
       maxX: CORRIDOR_HALF_W,
-      minZ: -36 - CORRIDOR_HALF_L,
-      maxZ: -36 + CORRIDOR_HALF_L
+      minZ: -36 - CORRIDOR_HALF_L - CONNECTOR_OVERLAP,
+      maxZ: -36 + CORRIDOR_HALF_L + CONNECTOR_OVERLAP
     };
     return [room1, room2, room3, corridor1, corridor2];
   }
 
   const room3: Rect = { minX: 44, maxX: 98, minZ: -26, maxZ: 26 };
   const corridor2: Rect = {
-    minX: 36 - CORRIDOR_HALF_L,
-    maxX: 36 + CORRIDOR_HALF_L,
+    minX: 36 - CORRIDOR_HALF_L - CONNECTOR_OVERLAP,
+    maxX: 36 + CORRIDOR_HALF_L + CONNECTOR_OVERLAP,
     minZ: -CORRIDOR_HALF_W,
     maxZ: CORRIDOR_HALF_W
   };
