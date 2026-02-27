@@ -89,8 +89,9 @@ const fireProjectile = (ctx: GameContext, player: Transform): void => {
   const burnDuration = ctx.runtime.levelIndex >= 3 ? ctx.config.abilities.level4.headBurn.duration : 0;
 
   const mesh = ctx.renderer.spawnWizardProjectile(player.x, 1.25, player.z);
-
-  const direction = new THREE.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw)).normalize();
+  const direction =
+    findNearestEnemyDirection(ctx, player) ??
+    new THREE.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw)).normalize();
   ctx.projectiles.push({
     mesh,
     velocity: direction.multiplyScalar(cfg.speed),
@@ -98,4 +99,29 @@ const fireProjectile = (ctx: GameContext, player: Transform): void => {
     burnDuration,
     owner: "player"
   });
+};
+
+const findNearestEnemyDirection = (ctx: GameContext, player: Transform): THREE.Vector3 | null => {
+  let nearest: Transform | null = null;
+  let nearestDistSq = Number.POSITIVE_INFINITY;
+
+  for (const entity of ctx.world.query(["enemy", "transform", "health"])) {
+    const enemyTransform = ctx.world.getComponent<Transform>(entity, "transform");
+    const enemyHealth = ctx.world.getComponent<Health>(entity, "health");
+    if (!enemyTransform || !enemyHealth || enemyHealth.current <= 0) {
+      continue;
+    }
+    const dx = enemyTransform.x - player.x;
+    const dz = enemyTransform.z - player.z;
+    const distSq = dx * dx + dz * dz;
+    if (distSq < nearestDistSq) {
+      nearestDistSq = distSq;
+      nearest = enemyTransform;
+    }
+  }
+
+  if (!nearest) {
+    return null;
+  }
+  return new THREE.Vector3(nearest.x - player.x, 0, nearest.z - player.z).normalize();
 };
