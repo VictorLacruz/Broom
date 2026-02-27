@@ -2,7 +2,7 @@ import type { Entity } from "../core/ecs";
 import type { EnemyType, LevelConfig } from "../data/types";
 import type { Combat, EnemyTag, Health, KeyItem, PlayerTag, Shield, Transform, Velocity } from "./components";
 import type { GameContext } from "./GameContext";
-import { DOOR_POSITION } from "./worldGeometry";
+import { getDoorPosition, INITIAL_ROOM_CENTER } from "./worldGeometry";
 import { generateLevelRooms } from "./systems/mapSystem";
 import { calculateWaveEnemyTotal } from "./systems/waveSystem";
 
@@ -97,6 +97,7 @@ export const loadLevel = (ctx: GameContext, levelIndex: number): void => {
     player.z = 0;
   }
 
+  ctx.renderer.setArenaLayout(level.levelIndex);
   spawnDoor(ctx);
   spawnWave(ctx, level, 0);
 };
@@ -105,10 +106,11 @@ export const spawnWave = (ctx: GameContext, level: LevelConfig, waveIdx: number)
   const formulaTotal = calculateWaveEnemyTotal(level.levelIndex, waveIdx + 1);
   const explicitTotal = level.waves[waveIdx]?.enemies.reduce((sum, e) => sum + e.count, 0) ?? formulaTotal;
   const total = Math.max(formulaTotal, explicitTotal);
+  const spawnCenter = getWaveSpawnCenter(level, waveIdx);
 
   for (let i = 0; i < total; i += 1) {
     const enemyType = chooseEnemyBySpawnRate(ctx, level);
-    spawnEnemy(ctx, enemyType, i, total);
+    spawnEnemy(ctx, enemyType, i, total, spawnCenter.x, spawnCenter.z);
   }
 
   ctx.runtime.enemiesTotal = total;
@@ -138,8 +140,10 @@ export const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
 };
 
 const spawnDoor = (ctx: GameContext): void => {
+  const levelNumber = ctx.runtime.levelIndex + 1;
+  const doorPos = getDoorPosition(levelNumber);
   ctx.internals.doorMesh = ctx.renderer.spawnDoor();
-  ctx.internals.doorMesh.position.set(DOOR_POSITION.x, DOOR_POSITION.y, DOOR_POSITION.z);
+  ctx.internals.doorMesh.position.set(doorPos.x, doorPos.y, doorPos.z);
 };
 
 const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType => {
@@ -161,12 +165,12 @@ const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType
   return ctx.config.enemies[0];
 };
 
-const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: number): void => {
+const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: number, centerX: number, centerZ: number): void => {
   const entity = ctx.world.createEntity();
   const angle = (idx / Math.max(total, 1)) * Math.PI * 2;
   const radius = ENEMY_RADIUS_BASE + (idx % 5) * 1.8;
-  const x = Math.cos(angle) * radius;
-  const z = Math.sin(angle) * radius;
+  const x = centerX + Math.cos(angle) * radius;
+  const z = centerZ + Math.sin(angle) * radius;
   const y = type.type === "campesino" ? 0.72 : 1;
 
   ctx.world.addComponent<Transform>(entity, "transform", { x, y, z, yaw: 0, pitch: 0 });
@@ -180,4 +184,11 @@ const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: numbe
   const mesh = ctx.renderer.spawnEnemy(type.type, color);
   mesh.position.set(x, y, z);
   ctx.enemyMeshes.set(entity, { mesh });
+};
+
+const getWaveSpawnCenter = (level: LevelConfig, waveIdx: number): { x: number; z: number } => {
+  if (level.levelIndex === 4 && waveIdx === level.waves.length - 1) {
+    return { x: INITIAL_ROOM_CENTER.x, z: INITIAL_ROOM_CENTER.z };
+  }
+  return { x: 0, z: 0 };
 };

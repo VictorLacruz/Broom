@@ -64,7 +64,8 @@
     "waves": [
       { "waveIndex": 1, "enemies": [{ "type": "campesino", "count": 7 }, { "type": "caballero", "count": 5 }, { "type": "goblin", "count": 2 }, { "type": "mago", "count": 1 }] },
       { "waveIndex": 2, "enemies": [{ "type": "campesino", "count": 7 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }, { "type": "mago", "count": 1 }] },
-      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 8 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }, { "type": "mago", "count": 2 }] }
+      { "waveIndex": 3, "enemies": [{ "type": "campesino", "count": 8 }, { "type": "caballero", "count": 6 }, { "type": "goblin", "count": 3 }, { "type": "mago", "count": 2 }] },
+      { "waveIndex": 4, "enemies": [{ "type": "campesino", "count": 9 }, { "type": "caballero", "count": 7 }, { "type": "goblin", "count": 4 }, { "type": "mago", "count": 2 }] }
     ],
     "spawnRates": { "campesino": 0.4, "caballero": 0.35, "goblin": 0.15, "mago": 0.1 }
   }

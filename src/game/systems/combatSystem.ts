@@ -1,14 +1,7 @@
 import * as THREE from "three";
-import projectileTextureUrl from "../../assets/textures/terrain/projectile_water.png";
 import type { Combat, Health, Transform } from "../components";
 import type { GameContext } from "../GameContext";
 import { killEnemy } from "../worldActions";
-
-const projectileTexture = new THREE.TextureLoader().load(projectileTextureUrl);
-projectileTexture.colorSpace = THREE.SRGBColorSpace;
-projectileTexture.wrapS = THREE.RepeatWrapping;
-projectileTexture.wrapT = THREE.RepeatWrapping;
-projectileTexture.repeat.set(1.5, 1.5);
 
 export const runPlayerCombatSystem = (ctx: GameContext, delta: number): void => {
   const combat = ctx.world.getComponent<Combat>(ctx.playerEntity, "combat");
@@ -95,18 +88,7 @@ const fireProjectile = (ctx: GameContext, player: Transform): void => {
   const cfg = ctx.config.abilities.level3.headProjectile;
   const burnDuration = ctx.runtime.levelIndex >= 3 ? ctx.config.abilities.level4.headBurn.duration : 0;
 
-  const geo = new THREE.SphereGeometry(0.2, 8, 8);
-  const mat = new THREE.MeshStandardMaterial({
-    map: projectileTexture,
-    color: "#ffffff",
-    emissive: "#29b6f6",
-    emissiveIntensity: 0.15,
-    roughness: 0.45,
-    metalness: 0.1
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(player.x, player.y, player.z);
-  ctx.renderer.scene.add(mesh);
+  const mesh = ctx.renderer.spawnWizardProjectile(player.x, 1.25, player.z);
 
   const direction = new THREE.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw)).normalize();
   ctx.projectiles.push({

@@ -15,6 +15,7 @@ import hit05Url from "../assets/sprites/fx/hit05.png";
 import shieldUrl from "../assets/sprites/fx/shield.png";
 import wizardProjectileUrl from "../assets/sprites/fx/fb000.gif";
 import playerAttackUrl from "../assets/sprites/fx/055.png";
+import { ARENA_DIMENSIONS, getArenaLayout, type ArenaLayout } from "../game/worldGeometry";
 
 type EnemyAnimState = "idle" | "run" | "attack" | "hit";
 
@@ -71,6 +72,8 @@ export class Renderer3D {
   };
   private activeDoor: THREE.Sprite | null = null;
   private activeShield: THREE.Sprite | null = null;
+  private readonly arenaObjects: THREE.Object3D[] = [];
+  private currentArenaLayout: ArenaLayout | null = null;
   private readonly transientHitSprites: THREE.Sprite[] = [];
   private readonly transientAttackSprites: THREE.Sprite[] = [];
 
@@ -111,7 +114,7 @@ export class Renderer3D {
     dir.position.set(8, 11, 5);
     this.scene.add(dir);
 
-    this.addArenaBase();
+    this.setArenaLayout(1);
     window.addEventListener("resize", this.onResize);
     this.renderer.domElement.addEventListener("contextmenu", (ev) => ev.preventDefault());
   }
@@ -127,6 +130,16 @@ export class Renderer3D {
   dispose(): void {
     window.removeEventListener("resize", this.onResize);
     this.renderer.dispose();
+  }
+
+  setArenaLayout(levelIndex: number): void {
+    const layout = getArenaLayout(levelIndex);
+    if (this.currentArenaLayout === layout && this.arenaObjects.length > 0) {
+      return;
+    }
+    this.currentArenaLayout = layout;
+    this.clearArenaBase();
+    this.addArenaBase(layout);
   }
 
   spawnEnemy(type: string, _color: string): THREE.Sprite {
@@ -493,7 +506,7 @@ export class Renderer3D {
     return sprite;
   }
 
-  private addArenaBase(): void {
+  private addArenaBase(layout: ArenaLayout): void {
     const floorMat = new THREE.MeshStandardMaterial({
       map: this.textures.floor,
       color: "#ffffff",
@@ -507,37 +520,79 @@ export class Renderer3D {
       metalness: 0,
       side: THREE.DoubleSide
     });
-    const ROOM_W = 56;
-    const ROOM_D = 56;
-    const COR_W = 18;
-    const COR_D = 20;
+    const ROOM_W = ARENA_DIMENSIONS.roomHalf * 2;
+    const ROOM_D = ARENA_DIMENSIONS.roomHalf * 2;
+    const COR_W = ARENA_DIMENSIONS.corridorHalfW * 2;
+    const COR_D = ARENA_DIMENSIONS.corridorHalfL * 2;
     const WALL_H = 6;
     const WALL_T = 1.4;
     const ROOF_Y = WALL_H;
     const C1 = -72;
     const C2 = 0;
-    const C3 = 72;
-    const COR1 = -36;
-    const COR2 = 36;
+    const room3 = layout === "straight" ? { x: 72, z: 0 } : layout === "right" ? { x: 0, z: 72 } : { x: 0, z: -72 };
+    const corridor1 = { x: -36, z: 0, orientation: "horizontal" as const };
+    const corridor2 =
+      layout === "straight"
+        ? { x: 36, z: 0, orientation: "horizontal" as const }
+        : layout === "right"
+          ? { x: 0, z: 36, orientation: "vertical" as const }
+          : { x: 0, z: -36, orientation: "vertical" as const };
 
     this.addRectFloor(C1, 0, ROOM_W, ROOM_D, 0, floorMat);
     this.addRectFloor(C2, 0, ROOM_W, ROOM_D, 0, floorMat);
-    this.addRectFloor(C3, 0, ROOM_W, ROOM_D, 0, floorMat);
-    this.addRectFloor(COR1, 0, COR_D, COR_W, 0.01, floorMat);
-    this.addRectFloor(COR2, 0, COR_D, COR_W, 0.01, floorMat);
+    this.addRectFloor(room3.x, room3.z, ROOM_W, ROOM_D, 0, floorMat);
+    this.addRectFloor(corridor1.x, corridor1.z, COR_D, COR_W, 0.01, floorMat);
+    this.addRectFloor(
+      corridor2.x,
+      corridor2.z,
+      corridor2.orientation === "horizontal" ? COR_D : COR_W,
+      corridor2.orientation === "horizontal" ? COR_W : COR_D,
+      0.01,
+      floorMat
+    );
 
     this.addRectFloor(C1, 0, ROOM_W, ROOM_D, ROOF_Y, ceilingMat, Math.PI / 2);
     this.addRectFloor(C2, 0, ROOM_W, ROOM_D, ROOF_Y, ceilingMat, Math.PI / 2);
-    this.addRectFloor(C3, 0, ROOM_W, ROOM_D, ROOF_Y, ceilingMat, Math.PI / 2);
-    this.addRectFloor(COR1, 0, COR_D, COR_W, ROOF_Y, ceilingMat, Math.PI / 2);
-    this.addRectFloor(COR2, 0, COR_D, COR_W, ROOF_Y, ceilingMat, Math.PI / 2);
+    this.addRectFloor(room3.x, room3.z, ROOM_W, ROOM_D, ROOF_Y, ceilingMat, Math.PI / 2);
+    this.addRectFloor(corridor1.x, corridor1.z, COR_D, COR_W, ROOF_Y, ceilingMat, Math.PI / 2);
+    this.addRectFloor(
+      corridor2.x,
+      corridor2.z,
+      corridor2.orientation === "horizontal" ? COR_D : COR_W,
+      corridor2.orientation === "horizontal" ? COR_W : COR_D,
+      ROOF_Y,
+      ceilingMat,
+      Math.PI / 2
+    );
 
-    this.addRoomWalls(C1, ROOM_W, ROOM_D, WALL_H, WALL_T, false, true);
-    this.addRoomWalls(C2, ROOM_W, ROOM_D, WALL_H, WALL_T, true, true);
-    this.addRoomWalls(C3, ROOM_W, ROOM_D, WALL_H, WALL_T, true, false);
+    this.addRoomWalls(C1, 0, ROOM_W, ROOM_D, WALL_H, WALL_T, false, true, false, false);
+    this.addRoomWalls(
+      C2,
+      0,
+      ROOM_W,
+      ROOM_D,
+      WALL_H,
+      WALL_T,
+      true,
+      layout === "straight",
+      layout === "left",
+      layout === "right"
+    );
+    this.addRoomWalls(
+      room3.x,
+      room3.z,
+      ROOM_W,
+      ROOM_D,
+      WALL_H,
+      WALL_T,
+      layout === "straight",
+      false,
+      layout === "right",
+      layout === "left"
+    );
 
-    this.addCorridorWalls(COR1, COR_D, COR_W, WALL_H, WALL_T);
-    this.addCorridorWalls(COR2, COR_D, COR_W, WALL_H, WALL_T);
+    this.addCorridorWalls(corridor1.x, corridor1.z, COR_D, COR_W, WALL_H, WALL_T, corridor1.orientation);
+    this.addCorridorWalls(corridor2.x, corridor2.z, COR_D, COR_W, WALL_H, WALL_T, corridor2.orientation);
   }
 
   private addRectFloor(
@@ -553,66 +608,118 @@ export class Renderer3D {
     mesh.rotation.x = rotX;
     mesh.position.set(x, y, z);
     this.scene.add(mesh);
+    this.arenaObjects.push(mesh);
   }
 
   private addRoomWalls(
     cx: number,
+    cz: number,
     width: number,
     depth: number,
     height: number,
     thickness: number,
     openWest: boolean,
-    openEast: boolean
+    openEast: boolean,
+    openNorth: boolean,
+    openSouth: boolean
   ): void {
     const halfW = width / 2;
     const halfD = depth / 2;
     const gap = 10;
-    const sideSeg = (depth - gap) / 2;
+    const sideSegDepth = (depth - gap) / 2;
+    const sideSegWidth = (width - gap) / 2;
 
-    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(0));
-    north.position.set(cx, height / 2, -halfD);
-    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(1));
-    south.position.set(cx, height / 2, halfD);
-    this.scene.add(north, south);
+    if (openNorth) {
+      const n1 = new THREE.Mesh(new THREE.BoxGeometry(sideSegWidth, height, thickness), this.pickWallMaterial(0));
+      const n2 = new THREE.Mesh(new THREE.BoxGeometry(sideSegWidth, height, thickness), this.pickWallMaterial(1));
+      n1.position.set(cx - ((gap / 2) + sideSegWidth / 2), height / 2, cz - halfD);
+      n2.position.set(cx + (gap / 2) + sideSegWidth / 2, height / 2, cz - halfD);
+      this.scene.add(n1, n2);
+      this.arenaObjects.push(n1, n2);
+    } else {
+      const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(0));
+      north.position.set(cx, height / 2, cz - halfD);
+      this.scene.add(north);
+      this.arenaObjects.push(north);
+    }
+
+    if (openSouth) {
+      const s1 = new THREE.Mesh(new THREE.BoxGeometry(sideSegWidth, height, thickness), this.pickWallMaterial(2));
+      const s2 = new THREE.Mesh(new THREE.BoxGeometry(sideSegWidth, height, thickness), this.pickWallMaterial(3));
+      s1.position.set(cx - ((gap / 2) + sideSegWidth / 2), height / 2, cz + halfD);
+      s2.position.set(cx + (gap / 2) + sideSegWidth / 2, height / 2, cz + halfD);
+      this.scene.add(s1, s2);
+      this.arenaObjects.push(s1, s2);
+    } else {
+      const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(2));
+      south.position.set(cx, height / 2, cz + halfD);
+      this.scene.add(south);
+      this.arenaObjects.push(south);
+    }
 
     if (openWest) {
-      const w1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(2));
-      const w2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(3));
-      w1.position.set(cx - halfW, height / 2, -((gap / 2) + sideSeg / 2));
-      w2.position.set(cx - halfW, height / 2, (gap / 2) + sideSeg / 2);
+      const w1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSegDepth), this.pickWallMaterial(4));
+      const w2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSegDepth), this.pickWallMaterial(5));
+      w1.position.set(cx - halfW, height / 2, cz - ((gap / 2) + sideSegDepth / 2));
+      w2.position.set(cx - halfW, height / 2, cz + (gap / 2) + sideSegDepth / 2);
       this.scene.add(w1, w2);
+      this.arenaObjects.push(w1, w2);
     } else {
-      const west = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(4));
-      west.position.set(cx - halfW, height / 2, 0);
+      const west = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(6));
+      west.position.set(cx - halfW, height / 2, cz);
       this.scene.add(west);
+      this.arenaObjects.push(west);
     }
 
     if (openEast) {
-      const e1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(5));
-      const e2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(6));
-      e1.position.set(cx + halfW, height / 2, -((gap / 2) + sideSeg / 2));
-      e2.position.set(cx + halfW, height / 2, (gap / 2) + sideSeg / 2);
+      const e1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSegDepth), this.pickWallMaterial(7));
+      const e2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSegDepth), this.pickWallMaterial(8));
+      e1.position.set(cx + halfW, height / 2, cz - ((gap / 2) + sideSegDepth / 2));
+      e2.position.set(cx + halfW, height / 2, cz + (gap / 2) + sideSegDepth / 2);
       this.scene.add(e1, e2);
+      this.arenaObjects.push(e1, e2);
     } else {
-      const east = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(7));
-      east.position.set(cx + halfW, height / 2, 0);
+      const east = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(9));
+      east.position.set(cx + halfW, height / 2, cz);
       this.scene.add(east);
+      this.arenaObjects.push(east);
     }
   }
 
   private addCorridorWalls(
     cx: number,
+    cz: number,
     width: number,
     depth: number,
     height: number,
-    thickness: number
+    thickness: number,
+    orientation: "horizontal" | "vertical"
   ): void {
-    const halfD = depth / 2;
-    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(8));
-    north.position.set(cx, height / 2, -halfD);
-    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(9));
-    south.position.set(cx, height / 2, halfD);
-    this.scene.add(north, south);
+    if (orientation === "horizontal") {
+      const halfD = depth / 2;
+      const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(10));
+      north.position.set(cx, height / 2, cz - halfD);
+      const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(11));
+      south.position.set(cx, height / 2, cz + halfD);
+      this.scene.add(north, south);
+      this.arenaObjects.push(north, south);
+      return;
+    }
+
+    const halfW = (depth / 2) - 1;
+    const west = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, width), this.pickWallMaterial(12));
+    west.position.set(cx - halfW, height / 2, cz);
+    const east = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, width), this.pickWallMaterial(13));
+    east.position.set(cx + halfW, height / 2, cz);
+    this.scene.add(west, east);
+    this.arenaObjects.push(west, east);
+  }
+
+  private clearArenaBase(): void {
+    for (const obj of this.arenaObjects) {
+      this.scene.remove(obj);
+    }
+    this.arenaObjects.splice(0, this.arenaObjects.length);
   }
 
   private pickWallMaterial(seed: number): THREE.Material {

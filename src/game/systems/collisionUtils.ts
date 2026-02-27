@@ -1,22 +1,14 @@
 import type { Transform } from "../components";
-import { DOOR_COLLIDER, type Rect } from "../worldGeometry";
-
-const WALKABLE_RECTS: Rect[] = [
-  { minX: -98, maxX: -44, minZ: -26, maxZ: 26 },
-  { minX: -28, maxX: 28, minZ: -26, maxZ: 26 },
-  { minX: 44, maxX: 98, minZ: -26, maxZ: 26 },
-  { minX: -48, maxX: -24, minZ: -5.5, maxZ: 5.5 },
-  { minX: 24, maxX: 48, minZ: -5.5, maxZ: 5.5 }
-];
-const BLOCKING_RECTS: Rect[] = [DOOR_COLLIDER];
+import { getDoorCollider, getWalkableRects, type Rect } from "../worldGeometry";
 
 const clamp = (v: number, min: number, max: number): number => Math.max(min, Math.min(max, v));
 
 const isInsideRect = (x: number, z: number, r: Rect): boolean =>
   x >= r.minX && x <= r.maxX && z >= r.minZ && z <= r.maxZ;
 
-export const clampToWalkable = (x: number, z: number, radius: number): { x: number; z: number } => {
-  const insetRects = WALKABLE_RECTS.map((r) => ({
+export const clampToWalkable = (x: number, z: number, radius: number, levelIndex: number): { x: number; z: number } => {
+  const walkableRects = getWalkableRects(levelIndex);
+  const insetRects = walkableRects.map((r) => ({
     minX: r.minX + radius,
     maxX: r.maxX - radius,
     minZ: r.minZ + radius,
@@ -25,7 +17,7 @@ export const clampToWalkable = (x: number, z: number, radius: number): { x: numb
 
   for (const r of insetRects) {
     if (isInsideRect(x, z, r)) {
-      return resolveBlockingRects(x, z, radius);
+      return resolveBlockingRects(x, z, radius, levelIndex);
     }
   }
 
@@ -40,14 +32,15 @@ export const clampToWalkable = (x: number, z: number, radius: number): { x: numb
       best = { x: cx, z: cz };
     }
   }
-  return resolveBlockingRects(best.x, best.z, radius);
+  return resolveBlockingRects(best.x, best.z, radius, levelIndex);
 };
 
-const resolveBlockingRects = (x: number, z: number, radius: number): { x: number; z: number } => {
+const resolveBlockingRects = (x: number, z: number, radius: number, levelIndex: number): { x: number; z: number } => {
+  const blockingRects = [getDoorCollider(levelIndex)];
   let px = x;
   let pz = z;
 
-  for (const rect of BLOCKING_RECTS) {
+  for (const rect of blockingRects) {
     const expanded = {
       minX: rect.minX - radius,
       maxX: rect.maxX + radius,

@@ -44,7 +44,7 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     }
 
     const distance = updateEnemySteering(enemy, transform, playerTransform, delta);
-    const clamped = clampToWalkable(transform.x, transform.z, ENEMY_RADIUS);
+    const clamped = clampToWalkable(transform.x, transform.z, ENEMY_RADIUS, ctx.runtime.levelIndex + 1);
     transform.x = clamped.x;
     transform.z = clamped.z;
     separateCircles(transform, playerTransform, ENEMY_RADIUS, PLAYER_RADIUS, 0.12, 0.88);

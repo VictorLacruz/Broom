@@ -27,7 +27,7 @@ export const runPlayerMovementSystem = (ctx: GameContext, input: InputState, del
   const dashSpeed = ctx.config.abilities.level4.dashShield.distance / DASH_DURATION;
   const speed = ctx.internals.dashTimer > 0 ? dashSpeed : PLAYER_SPEED;
   updatePlayerMovement(transform, velocity, input, speed, delta);
-  const clamped = clampToWalkable(transform.x, transform.z, PLAYER_RADIUS);
+  const clamped = clampToWalkable(transform.x, transform.z, PLAYER_RADIUS, ctx.runtime.levelIndex + 1);
   transform.x = clamped.x;
   transform.z = clamped.z;
 

@@ -1,13 +1,23 @@
 import type { LevelConfig, RoomConfig } from "../../data/types";
+import { getArenaLayout } from "../worldGeometry";
 
 export const generateLevelRooms = (level: LevelConfig): RoomConfig[] => {
-  if (level.levelIndex === 1) {
+  const layout = getArenaLayout(level.levelIndex);
+  if (layout === "straight") {
     return level.rooms;
   }
 
-  return level.rooms.map((room, idx) => ({
-    ...room,
-    coords: [room.coords[0] + (Math.random() * 16 - 8), room.coords[1] + (Math.random() * 16 - 8)] as [number, number],
-    area: Math.round(room.area * (1 + idx * 0.03))
-  }));
+  if (layout === "right") {
+    return level.rooms.map((room, idx) => {
+      if (idx === 0) return { ...room, coords: [-72, 0] };
+      if (idx === 1) return { ...room, coords: [0, 0] };
+      return { ...room, coords: [0, 72] };
+    });
+  }
+
+  return level.rooms.map((room, idx) => {
+    if (idx === 0) return { ...room, coords: [-72, 0] };
+    if (idx === 1) return { ...room, coords: [0, 0] };
+    return { ...room, coords: [0, -72] };
+  });
 };
