@@ -18,7 +18,7 @@
     "headProjectile": {
       "cooldown": 5,
       "speed": 25,
-      "damage": 60
+      "damage": 400
     }
   },
   "level4": {

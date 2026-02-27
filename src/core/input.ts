@@ -21,6 +21,7 @@ export class InputController {
     window.addEventListener("mousemove", this.onMouseMove);
     window.addEventListener("mousedown", this.onMouseDown);
     window.addEventListener("mouseup", this.onMouseUp);
+    window.addEventListener("contextmenu", this.onContextMenu);
     element.addEventListener("click", () => {
       if (document.pointerLockElement !== element) {
         element.requestPointerLock();
@@ -34,6 +35,7 @@ export class InputController {
     window.removeEventListener("mousemove", this.onMouseMove);
     window.removeEventListener("mousedown", this.onMouseDown);
     window.removeEventListener("mouseup", this.onMouseUp);
+    window.removeEventListener("contextmenu", this.onContextMenu);
   }
 
   consumeState(): InputState {
@@ -107,5 +109,9 @@ export class InputController {
     if (ev.button === 2) {
       this.state.shield = false;
     }
+  };
+
+  private onContextMenu = (ev: MouseEvent): void => {
+    ev.preventDefault();
   };
 }
