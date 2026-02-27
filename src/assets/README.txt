@@ -14,11 +14,14 @@ Archivos activos:
 - src/assets/textures/terrain/projectile_water.png
 - src/assets/textures/terrain/LICENSE.txt
 
-Modelos:
-- Fuente: https://pierre-vandermaesen.itch.io/basic-low-poly-character
-- Asset: "Basic Low Poly Character" (archivo `basicMan.fbx`)
-- Autor: Pierre Vandermaesen
-- Licencia: CC BY 4.0
-
-Archivos activos:
-- src/assets/models/itch_basicman.fbx
+Sprites enemigos 2D:
+- Mapping de tipos:
+  - `mago` -> `wizard`
+  - `campesino` -> `skeleton`
+  - `caballero` -> `knight`
+  - `goblin` -> `goblin`
+- Archivos activos:
+  - `src/assets/sprites/enemies/wizard/wizard_idle.png`
+  - `src/assets/sprites/enemies/skeleton/*.png`
+  - `src/assets/sprites/enemies/knight/*.png`
+  - `src/assets/sprites/enemies/goblin/goblin_sheet.png`

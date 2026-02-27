@@ -1,6 +1,22 @@
 import * as THREE from "three";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
-import enemyModelUrl from "../assets/models/itch_basicman.fbx?url";
+import goblinSheetUrl from "../assets/sprites/enemies/goblin/goblin_sheet.png";
+import knight14Url from "../assets/sprites/enemies/knight/frame0014.png";
+import knight15Url from "../assets/sprites/enemies/knight/frame0015.png";
+import knight16Url from "../assets/sprites/enemies/knight/frame0016.png";
+import knight17Url from "../assets/sprites/enemies/knight/frame0017.png";
+import knight18Url from "../assets/sprites/enemies/knight/frame0018.png";
+import knight19Url from "../assets/sprites/enemies/knight/frame0019.png";
+import knight20Url from "../assets/sprites/enemies/knight/frame0020.png";
+import knight21Url from "../assets/sprites/enemies/knight/frame0021.png";
+import skeleton0Url from "../assets/sprites/enemies/skeleton/run_0.png";
+import skeleton1Url from "../assets/sprites/enemies/skeleton/run_1.png";
+import skeleton2Url from "../assets/sprites/enemies/skeleton/run_2.png";
+import skeleton3Url from "../assets/sprites/enemies/skeleton/run_3.png";
+import skeleton4Url from "../assets/sprites/enemies/skeleton/run_4.png";
+import skeleton5Url from "../assets/sprites/enemies/skeleton/run_5.png";
+import skeleton6Url from "../assets/sprites/enemies/skeleton/run_6.png";
+import skeleton7Url from "../assets/sprites/enemies/skeleton/run_7.png";
+import wizardIdleUrl from "../assets/sprites/enemies/wizard/wizard_idle.png";
 import grassTextureUrl from "../assets/textures/terrain/ground_grass.png";
 import keyTextureUrl from "../assets/textures/terrain/key_water.png";
 import wallTextureUrl from "../assets/textures/terrain/wall_stone.png";
@@ -10,8 +26,6 @@ export class Renderer3D {
   readonly camera: THREE.PerspectiveCamera;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly textureLoader = new THREE.TextureLoader();
-  private readonly fbxLoader = new FBXLoader();
-  private enemyTemplate: THREE.Group | null = null;
   private readonly textures: {
     floor: THREE.Texture;
     wall: THREE.Texture;
@@ -43,7 +57,6 @@ export class Renderer3D {
     this.scene.add(dir);
 
     this.addArenaBase();
-    this.loadEnemyTemplate();
     window.addEventListener("resize", this.onResize);
     this.renderer.domElement.addEventListener("contextmenu", (ev) => ev.preventDefault());
   }
@@ -61,67 +74,31 @@ export class Renderer3D {
     this.renderer.dispose();
   }
 
-  spawnEnemy(type: string, color: string): THREE.Group {
-    if (this.enemyTemplate) {
-      return this.spawnEnemyFromTemplate(type, color);
+  spawnEnemy(type: string, _color: string): THREE.Sprite {
+    let sprite: THREE.Sprite;
+    if (type === "mago") {
+      sprite = this.createAtlasSprite(wizardIdleUrl, 10, 1, 10, 0, 1.8, 1.8);
+    } else if (type === "campesino") {
+      sprite = this.createFrameSprite(
+        [skeleton0Url, skeleton1Url, skeleton2Url, skeleton3Url, skeleton4Url, skeleton5Url, skeleton6Url, skeleton7Url],
+        11,
+        1.7,
+        1.7
+      );
+    } else if (type === "caballero") {
+      sprite = this.createFrameSprite(
+        [knight14Url, knight15Url, knight16Url, knight17Url, knight18Url, knight19Url, knight20Url, knight21Url],
+        11,
+        1.8,
+        1.8
+      );
+    } else {
+      sprite = this.createAtlasSprite(goblinSheetUrl, 8, 3, 10, 0, 2.2, 2.2);
     }
 
-    return this.spawnFallbackEnemy(type, color);
-  }
-
-  private spawnEnemyFromTemplate(type: string, color: string): THREE.Group {
-    const root = this.enemyTemplate!.clone(true);
-    root.name = `enemy-${type}`;
-    this.tintModel(root, color);
-    this.addEnemyProps(root, type, color);
-    this.scene.add(root);
-    return root;
-  }
-
-  private spawnFallbackEnemy(type: string, color: string): THREE.Group {
-    const root = new THREE.Group();
-    root.name = `enemy-${type}`;
-
-    const cloth = new THREE.MeshStandardMaterial({
-      color,
-      roughness: 0.9,
-      metalness: 0.05
-    });
-    const skin = new THREE.MeshStandardMaterial({
-      color: "#f2c7a2",
-      roughness: 1,
-      metalness: 0
-    });
-    const dark = new THREE.MeshStandardMaterial({
-      color: "#2b2b2b",
-      roughness: 1,
-      metalness: 0
-    });
-
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 0.85, 6, 10), cloth);
-    body.position.y = 1.15;
-
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 14, 12), skin);
-    head.position.y = 1.85;
-
-    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.52, 4, 8), cloth);
-    armL.position.set(-0.42, 1.16, 0);
-    armL.rotation.z = 0.18;
-
-    const armR = armL.clone();
-    armR.position.x = 0.42;
-    armR.rotation.z = -0.18;
-
-    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.62, 4, 8), dark);
-    legL.position.set(-0.17, 0.45, 0);
-    const legR = legL.clone();
-    legR.position.x = 0.17;
-
-    root.add(body, head, armL, armR, legL, legR);
-    this.addEnemyProps(root, type, color);
-
-    this.scene.add(root);
-    return root;
+    sprite.name = `enemy-${type}`;
+    this.scene.add(sprite);
+    return sprite;
   }
 
   spawnKey(): THREE.Mesh {
@@ -143,119 +120,64 @@ export class Renderer3D {
     this.scene.remove(obj);
   }
 
-  private createEnemyNameTag(type: string): THREE.Sprite {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.fillStyle = "rgba(17, 24, 39, 0.7)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(245, 244, 232, 0.9)";
-      ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
-      ctx.fillStyle = "#f5f4e8";
-      ctx.font = "bold 28px Verdana";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(type.toUpperCase(), canvas.width / 2, canvas.height / 2);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
+  private createAtlasSprite(
+    url: string,
+    cols: number,
+    rows: number,
+    fps: number,
+    rowIndex: number,
+    scaleX: number,
+    scaleY: number
+  ): THREE.Sprite {
+    const texture = this.textureLoader.load(url);
     texture.colorSpace = THREE.SRGBColorSpace;
-    const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1 / cols, 1 / rows);
+    texture.offset.set(0, 1 - (rowIndex + 1) / rows);
+
+    const mat = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      alphaTest: 0.2,
+      depthWrite: false
+    });
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(2.6, 0.65, 1);
-    sprite.position.set(0, 2.35, 0);
+    sprite.scale.set(scaleX, scaleY, 1);
+    sprite.userData.animateEnemySprite = (time: number): void => {
+      const frame = Math.floor(time * fps) % cols;
+      texture.offset.x = frame / cols;
+      texture.offset.y = 1 - (rowIndex + 1) / rows;
+    };
     return sprite;
   }
 
-  private addEnemyProps(root: THREE.Group, type: string, color: string): void {
-    root.add(this.createEnemyNameTag(type));
-
-    const propsMat = new THREE.MeshStandardMaterial({
-      color,
-      roughness: 0.92,
-      metalness: 0.08
+  private createFrameSprite(frameUrls: string[], fps: number, scaleX: number, scaleY: number): THREE.Sprite {
+    const frames = frameUrls.map((url) => {
+      const texture = this.textureLoader.load(url);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      return texture;
     });
-
-    if (type === "caballero") {
-      const shield = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.08, 14), propsMat);
-      shield.position.set(-0.45, 1.2, 0.2);
-      shield.rotation.x = Math.PI / 2;
-      root.add(shield);
-    } else if (type === "goblin") {
-      const dagger = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.5, 6), propsMat);
-      dagger.position.set(0.48, 1.12, 0.18);
-      dagger.rotation.z = Math.PI / 3;
-      root.add(dagger);
-    } else if (type === "mago") {
-      const staff = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.1, 8), propsMat);
-      staff.position.set(0.5, 1.08, 0.05);
-      staff.rotation.z = 0.16;
-      const orb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.09, 10, 8),
-        new THREE.MeshStandardMaterial({ color: "#7dd3fc", emissive: "#1d4ed8", emissiveIntensity: 0.5 })
-      );
-      orb.position.set(0, 0.58, 0);
-      staff.add(orb);
-      root.add(staff);
-    } else {
-      const tool = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 0.08), propsMat);
-      tool.position.set(0.46, 1.08, 0);
-      tool.rotation.z = -0.22;
-      root.add(tool);
-    }
-  }
-
-  private loadEnemyTemplate(): void {
-    this.fbxLoader.load(
-      enemyModelUrl,
-      (object) => {
-        const template = new THREE.Group();
-        template.name = "itch-basicman-template";
-        object.scale.setScalar(0.018);
-        object.position.set(0, 0, 0);
-        object.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            const mesh = child as THREE.Mesh;
-            mesh.castShadow = false;
-            mesh.receiveShadow = false;
-            const src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-            const baseColor = src && "color" in src ? ((src as THREE.MeshStandardMaterial).color?.getHexString() ?? "ffffff") : "ffffff";
-            mesh.material = new THREE.MeshStandardMaterial({
-              color: `#${baseColor}`,
-              roughness: 0.9,
-              metalness: 0.02
-            });
-          }
-        });
-        template.add(object);
-        this.enemyTemplate = template;
-      },
-      undefined,
-      () => {
-        this.enemyTemplate = null;
-      }
-    );
-  }
-
-  private tintModel(root: THREE.Object3D, color: string): void {
-    root.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const current = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-        const mat =
-          current instanceof THREE.MeshStandardMaterial
-            ? current
-            : new THREE.MeshStandardMaterial({
-                color: "#ffffff",
-                roughness: 0.9,
-                metalness: 0.02
-              });
-        mesh.material = mat.clone();
-        (mesh.material as THREE.MeshStandardMaterial).color.multiply(new THREE.Color(color));
-      }
+    const mat = new THREE.SpriteMaterial({
+      map: frames[0],
+      transparent: true,
+      alphaTest: 0.2,
+      depthWrite: false
     });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(scaleX, scaleY, 1);
+    sprite.userData.animateEnemySprite = (time: number): void => {
+      const frame = Math.floor(time * fps) % frames.length;
+      if (mat.map !== frames[frame]) {
+        mat.map = frames[frame];
+        mat.needsUpdate = true;
+      }
+    };
+    return sprite;
   }
 
   private addArenaBase(): void {

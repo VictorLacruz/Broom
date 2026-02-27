@@ -10,6 +10,8 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
       continue;
     }
     enemyRender.mesh.position.set(transform.x, transform.y, transform.z);
+    const animateSprite = enemyRender.mesh.userData.animateEnemySprite as ((time: number) => void) | undefined;
+    animateSprite?.(time);
   }
 
   if (ctx.internals.keyMesh && !ctx.runtime.playerHasKey) {
@@ -17,4 +19,3 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
     ctx.internals.keyMesh.position.y = 1.2 + Math.sin(time * 2) * 0.2;
   }
 };
-
