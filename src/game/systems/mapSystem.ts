@@ -7,7 +7,7 @@ export const generateLevelRooms = (level: LevelConfig): RoomConfig[] => {
 
   return level.rooms.map((room, idx) => ({
     ...room,
-    coords: [room.coords[0] + (Math.random() * 16 - 8), room.coords[1] + (Math.random() * 16 - 8)],
+    coords: [room.coords[0] + (Math.random() * 16 - 8), room.coords[1] + (Math.random() * 16 - 8)] as [number, number],
     area: Math.round(room.area * (1 + idx * 0.03))
   }));
 };
