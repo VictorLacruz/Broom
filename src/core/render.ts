@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import dungeonStoneFloorLayout01Url from "../assets/textures/dungeon/stone_floor_layout01.png";
 import dungeonFloor02Url from "../assets/textures/dungeon/floor02.png";
-import dungeonWallBrick01Url from "../assets/textures/dungeon/wall_brick01.png";
-import dungeonWallTorch01Url from "../assets/textures/dungeon/wall_torch01.png";
+import dungeonWallTileSetUrl from "../assets/textures/dungeon/dungeon_tile_set_wall.png";
 import doorClosedUrl from "../assets/sprites/items/door_closed.jpeg";
 import doorOpenUrl from "../assets/sprites/items/door_open.jpeg";
 import key1Url from "../assets/sprites/items/keyfly_1.jpeg";
@@ -84,7 +83,7 @@ export class Renderer3D {
     this.textures = {
       floor: this.loadTexture(dungeonStoneFloorLayout01Url, 10, 10),
       ceiling: this.loadTexture(dungeonFloor02Url, 24, 24),
-      walls: [this.loadTexture(dungeonWallBrick01Url, 6, 2), this.loadTexture(dungeonWallTorch01Url, 2, 1)],
+    walls: [this.loadTexture(dungeonWallTileSetUrl, 2, 1)],
       doorClosed: this.loadSpriteTexture(doorClosedUrl),
       doorOpen: this.loadSpriteTexture(doorOpenUrl),
       keyFrames: [this.loadSpriteTexture(key1Url), this.loadSpriteTexture(key2Url), this.loadSpriteTexture(key3Url), this.loadSpriteTexture(key4Url)],

@@ -1,5 +1,5 @@
 import type { GameContext } from "../GameContext";
-import { loadLevel, spawnWave } from "../worldActions";
+import { loadLevel, spawnKey, spawnWave } from "../worldActions";
 
 const LEVEL_LOADING_SECONDS = 1.5;
 
@@ -28,17 +28,7 @@ export const runProgressionSystem = (ctx: GameContext): void => {
   }
 
   if (!ctx.runtime.playerHasKey) {
+    spawnKey(ctx, ctx.runtime.currentLevel);
     return;
   }
-
-  const nextLevel = ctx.runtime.levelIndex + 1;
-  if (nextLevel >= ctx.config.levels.length) {
-    ctx.runtime.victory = true;
-    return;
-  }
-
-  ctx.runtime.loading = true;
-  ctx.runtime.loadingTimer = LEVEL_LOADING_SECONDS;
-  ctx.runtime.levelIndex = nextLevel;
 };
-

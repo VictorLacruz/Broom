@@ -65,6 +65,10 @@ export const loadLevel = (ctx: GameContext, levelIndex: number): void => {
   clearEnemies(ctx);
   clearProjectiles(ctx);
 
+  if (ctx.internals.keyEntity) {
+    ctx.world.removeEntity(ctx.internals.keyEntity);
+    ctx.internals.keyEntity = 0;
+  }
   if (ctx.internals.keyMesh) {
     ctx.renderer.removeObject(ctx.internals.keyMesh);
     ctx.internals.keyMesh = null;
@@ -90,7 +94,6 @@ export const loadLevel = (ctx: GameContext, levelIndex: number): void => {
     player.z = 0;
   }
 
-  spawnKey(ctx, level);
   spawnDoor(ctx);
   spawnWave(ctx, level, 0);
 };
@@ -109,7 +112,10 @@ export const spawnWave = (ctx: GameContext, level: LevelConfig, waveIdx: number)
   ctx.runtime.enemiesAlive = total;
 };
 
-const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
+export const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
+  if (ctx.internals.keyMesh) {
+    return;
+  }
   const fallbackIdx = Math.floor(level.rooms.length / 2);
   const room = level.rooms.find((entry) => entry.id === level.keyRoomId) ?? level.rooms[fallbackIdx];
   const keyEntity = ctx.world.createEntity();
@@ -130,7 +136,7 @@ const spawnKey = (ctx: GameContext, level: LevelConfig): void => {
 
 const spawnDoor = (ctx: GameContext): void => {
   ctx.internals.doorMesh = ctx.renderer.spawnDoor();
-  ctx.internals.doorMesh.position.set(95.2, 1.45, 0);
+  ctx.internals.doorMesh.position.set(95.2, 0.18, 0);
 };
 
 const chooseEnemyBySpawnRate = (ctx: GameContext, level: LevelConfig): EnemyType => {
