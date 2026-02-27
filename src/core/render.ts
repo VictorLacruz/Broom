@@ -12,6 +12,9 @@ import hit02Url from "../assets/sprites/fx/hit02.png";
 import hit03Url from "../assets/sprites/fx/hit03.png";
 import hit04Url from "../assets/sprites/fx/hit04.png";
 import hit05Url from "../assets/sprites/fx/hit05.png";
+import shieldUrl from "../assets/sprites/fx/shield.png";
+import wizardProjectileUrl from "../assets/sprites/fx/fb000.gif";
+import playerAttackUrl from "../assets/sprites/fx/055.png";
 
 type EnemyAnimState = "idle" | "run" | "attack" | "hit";
 
@@ -62,9 +65,14 @@ export class Renderer3D {
     doorClosed: THREE.Texture;
     keyFrames: THREE.Texture[];
     hitFrames: THREE.Texture[];
+    shield: THREE.Texture;
+    wizardProjectile: THREE.Texture;
+    playerAttack: THREE.Texture;
   };
   private activeDoor: THREE.Sprite | null = null;
+  private activeShield: THREE.Sprite | null = null;
   private readonly transientHitSprites: THREE.Sprite[] = [];
+  private readonly transientAttackSprites: THREE.Sprite[] = [];
 
   constructor(private readonly mount: HTMLElement) {
     this.scene = new THREE.Scene();
@@ -90,7 +98,10 @@ export class Renderer3D {
         this.loadSpriteTexture(hit03Url),
         this.loadSpriteTexture(hit04Url),
         this.loadSpriteTexture(hit05Url)
-      ]
+      ],
+      shield: this.loadSpriteTexture(shieldUrl),
+      wizardProjectile: this.loadSpriteTexture(wizardProjectileUrl),
+      playerAttack: this.loadSpriteTexture(playerAttackUrl)
     };
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.72);
@@ -285,6 +296,64 @@ export class Renderer3D {
     this.scene.add(sprite);
   }
 
+  spawnWizardProjectile(x: number, y: number, z: number): THREE.Mesh {
+    const mat = new THREE.MeshBasicMaterial({
+      map: this.textures.wizardProjectile,
+      transparent: true,
+      alphaTest: 0.15,
+      depthWrite: false
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.95), mat);
+    mesh.position.set(x, y, z);
+    this.scene.add(mesh);
+    return mesh;
+  }
+
+  setShieldSprite(active: boolean, x: number, z: number, time: number): void {
+    if (!active) {
+      if (this.activeShield) {
+        this.scene.remove(this.activeShield);
+        this.activeShield = null;
+      }
+      return;
+    }
+    if (!this.activeShield) {
+      const mat = new THREE.SpriteMaterial({
+        map: this.textures.shield,
+        transparent: true,
+        alphaTest: 0.15,
+        depthWrite: false
+      });
+      this.activeShield = new THREE.Sprite(mat);
+      this.activeShield.scale.set(2.4, 2.4, 1);
+      this.activeShield.center.set(0.5, 0.5);
+      this.scene.add(this.activeShield);
+    }
+    this.activeShield.position.set(x, 1.35 + Math.sin(time * 6) * 0.05, z);
+    const shieldMat = this.activeShield.material as THREE.SpriteMaterial;
+    shieldMat.opacity = 0.82 + Math.sin(time * 9) * 0.08;
+    shieldMat.needsUpdate = true;
+  }
+
+  spawnPlayerAttackEffect(x: number, y: number, z: number, yaw: number, time: number): void {
+    const mat = new THREE.SpriteMaterial({
+      map: this.textures.playerAttack,
+      transparent: true,
+      alphaTest: 0.15,
+      depthWrite: false
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(1.15, 1.15, 1);
+    sprite.center.set(0.5, 0.3);
+    const fxX = x + Math.sin(yaw) * 1.05;
+    const fxZ = z + Math.cos(yaw) * 1.05;
+    sprite.position.set(fxX, y - 0.2, fxZ);
+    sprite.userData.attackFxStart = time;
+    sprite.userData.attackFxDuration = 0.14;
+    this.transientAttackSprites.push(sprite);
+    this.scene.add(sprite);
+  }
+
   updateHitEffects(time: number): void {
     for (let i = this.transientHitSprites.length - 1; i >= 0; i -= 1) {
       const sprite = this.transientHitSprites[i];
@@ -305,9 +374,30 @@ export class Renderer3D {
     }
   }
 
+  updateAttackEffects(time: number): void {
+    for (let i = this.transientAttackSprites.length - 1; i >= 0; i -= 1) {
+      const sprite = this.transientAttackSprites[i];
+      const start = sprite.userData.attackFxStart as number;
+      const duration = sprite.userData.attackFxDuration as number;
+      const t = (time - start) / duration;
+      if (t >= 1) {
+        this.scene.remove(sprite);
+        this.transientAttackSprites.splice(i, 1);
+        continue;
+      }
+      const mat = sprite.material as THREE.SpriteMaterial;
+      mat.opacity = 1 - t;
+      mat.needsUpdate = true;
+      sprite.scale.set(1.15 + t * 0.45, 1.15 + t * 0.45, 1);
+    }
+  }
+
   removeObject(obj: THREE.Object3D): void {
     if (obj === this.activeDoor) {
       this.activeDoor = null;
+    }
+    if (obj === this.activeShield) {
+      this.activeShield = null;
     }
     this.scene.remove(obj);
   }

@@ -14,6 +14,7 @@ export interface Projectile {
   velocity: THREE.Vector3;
   damage: number;
   burnDuration: number;
+  owner: "player" | "enemy";
 }
 
 export interface GameInternals {

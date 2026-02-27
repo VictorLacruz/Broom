@@ -5,6 +5,9 @@ import { killEnemy } from "../worldActions";
 
 const ENEMY_RADIUS = 0.72;
 const PLAYER_RADIUS = 0.8;
+const MAGE_PROJECTILE_RANGE = 13;
+const MAGE_PROJECTILE_SPEED = 11;
+const MAGE_PROJECTILE_Y = 1.25;
 
 export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
   const playerTransform = ctx.world.getComponent<Transform>(ctx.playerEntity, "transform");
@@ -45,7 +48,14 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     transform.z = clamped.z;
     separateCircles(transform, playerTransform, ENEMY_RADIUS, PLAYER_RADIUS, 0.12, 0.88);
 
-    if (distance <= combat.range && combat.timer <= 0) {
+    const isWizard = enemy.type.type === "mago";
+    if (isWizard && distance <= MAGE_PROJECTILE_RANGE && combat.timer <= 0) {
+      spawnMageProjectile(ctx, transform, playerTransform, enemy.type.damage);
+      combat.timer = combat.cooldown;
+      if (render) {
+        render.mesh.userData.attackAnimTimer = 0.28;
+      }
+    } else if (!isWizard && distance <= combat.range && combat.timer <= 0) {
       if (shield.active) {
         shield.durability = Math.max(0, shield.durability - enemy.type.damage * 0.45);
       } else {
@@ -87,6 +97,18 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
     }
   }
   ctx.runtime.shieldDurability = shield.durability;
+};
+
+const spawnMageProjectile = (ctx: GameContext, mage: Transform, player: Transform, damage: number): void => {
+  const mesh = ctx.renderer.spawnWizardProjectile(mage.x, MAGE_PROJECTILE_Y, mage.z);
+  const velocity = new THREE.Vector3(player.x - mage.x, 0, player.z - mage.z).normalize().multiplyScalar(MAGE_PROJECTILE_SPEED);
+  ctx.projectiles.push({
+    mesh,
+    velocity,
+    damage,
+    burnDuration: 0,
+    owner: "enemy"
+  });
 };
 
 export const updateEnemySteering = (

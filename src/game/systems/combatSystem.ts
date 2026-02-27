@@ -23,6 +23,7 @@ export const runPlayerCombatSystem = (ctx: GameContext, delta: number): void => 
     const swing = ctx.config.abilities.level1.mangualSwing;
     const arc = swing.arcSequence[ctx.internals.swingIndex % swing.arcSequence.length] ?? "center";
     ctx.internals.swingIndex += 1;
+    ctx.renderer.spawnPlayerAttackEffect(playerTransform.x, playerTransform.y, playerTransform.z, playerTransform.yaw, performance.now() / 1000);
     meleeHit(ctx, playerTransform, combat.damage, swing.hitboxRadius + combat.range, arc, swing.pushOnHit);
     combat.timer = combat.cooldown;
   }
@@ -112,6 +113,7 @@ const fireProjectile = (ctx: GameContext, player: Transform): void => {
     mesh,
     velocity: direction.multiplyScalar(cfg.speed),
     damage: cfg.damage,
-    burnDuration
+    burnDuration,
+    owner: "player"
   });
 };
