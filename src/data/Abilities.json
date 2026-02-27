@@ -1,0 +1,34 @@
+{
+  "level1": {
+    "mangualSwing": {
+      "arcSequence": ["center", "right45", "center", "left45"],
+      "hitboxRadius": 1.0,
+      "pushOnHit": true
+    }
+  },
+  "level2": {
+    "shield": {
+      "durabilityMax": 100,
+      "regenRate": 2,
+      "armorPacksAffect": true,
+      "requiresDurabilityAbove25": true
+    }
+  },
+  "level3": {
+    "headProjectile": {
+      "cooldown": 5,
+      "speed": 25,
+      "damage": 60
+    }
+  },
+  "level4": {
+    "headBurn": {
+      "damagePerSecond": 0.05,
+      "duration": 2
+    },
+    "dashShield": {
+      "cooldown": 5,
+      "distance": 10
+    }
+  }
+}
