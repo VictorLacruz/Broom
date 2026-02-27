@@ -158,8 +158,9 @@ const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: numbe
   const radius = ENEMY_RADIUS_BASE + (idx % 5) * 1.8;
   const x = Math.cos(angle) * radius;
   const z = Math.sin(angle) * radius;
+  const y = type.type === "campesino" ? 0.72 : 1;
 
-  ctx.world.addComponent<Transform>(entity, "transform", { x, y: 1, z, yaw: 0, pitch: 0 });
+  ctx.world.addComponent<Transform>(entity, "transform", { x, y, z, yaw: 0, pitch: 0 });
   ctx.world.addComponent<Velocity>(entity, "velocity", { x: 0, y: 0, z: 0 });
   ctx.world.addComponent<Health>(entity, "health", { current: type.hp, max: type.maxHp });
   ctx.world.addComponent<EnemyTag>(entity, "enemy", { type, burnTimer: 0 });
@@ -168,6 +169,6 @@ const spawnEnemy = (ctx: GameContext, type: EnemyType, idx: number, total: numbe
   const color =
     type.type === "campesino" ? "#7cb342" : type.type === "caballero" ? "#9e9e9e" : type.type === "goblin" ? "#00acc1" : "#ab47bc";
   const mesh = ctx.renderer.spawnEnemy(type.type, color);
-  mesh.position.set(x, 1, z);
+  mesh.position.set(x, y, z);
   ctx.enemyMeshes.set(entity, { mesh });
 };

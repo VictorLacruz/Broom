@@ -8,11 +8,11 @@ type Rect = {
 };
 
 const WALKABLE_RECTS: Rect[] = [
-  { minX: -98, maxX: -46, minZ: -26, maxZ: 26 },
-  { minX: -26, maxX: 26, minZ: -26, maxZ: 26 },
-  { minX: 46, maxX: 98, minZ: -26, maxZ: 26 },
-  { minX: -46, maxX: -26, minZ: -8.5, maxZ: 8.5 },
-  { minX: 26, maxX: 46, minZ: -8.5, maxZ: 8.5 }
+  { minX: -98, maxX: -44, minZ: -26, maxZ: 26 },
+  { minX: -28, maxX: 28, minZ: -26, maxZ: 26 },
+  { minX: 44, maxX: 98, minZ: -26, maxZ: 26 },
+  { minX: -48, maxX: -24, minZ: -5.5, maxZ: 5.5 },
+  { minX: 24, maxX: 48, minZ: -5.5, maxZ: 5.5 }
 ];
 
 const clamp = (v: number, min: number, max: number): number => Math.max(min, Math.min(max, v));
@@ -71,4 +71,3 @@ export const separateCircles = (
   b.x += nx * overlap * ratioB;
   b.z += nz * overlap * ratioB;
 };
-

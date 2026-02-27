@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import dungeonFloor01Url from "../assets/textures/dungeon/floor01.png";
+import dungeonStoneFloorLayout01Url from "../assets/textures/dungeon/stone_floor_layout01.png";
 import dungeonFloor02Url from "../assets/textures/dungeon/floor02.png";
-import dungeonWallUrl from "../assets/textures/dungeon/brick_wall01.png";
+import dungeonWallBrick01Url from "../assets/textures/dungeon/wall_brick01.png";
+import dungeonWallTorch01Url from "../assets/textures/dungeon/wall_torch01.png";
 import doorClosedUrl from "../assets/sprites/items/door_closed.jpeg";
 import doorOpenUrl from "../assets/sprites/items/door_open.jpeg";
 import key1Url from "../assets/sprites/items/keyfly_1.jpeg";
@@ -59,7 +60,7 @@ export class Renderer3D {
   private readonly textures: {
     floor: THREE.Texture;
     ceiling: THREE.Texture;
-    wall: THREE.Texture;
+    walls: THREE.Texture[];
     doorClosed: THREE.Texture;
     doorOpen: THREE.Texture;
     keyFrames: THREE.Texture[];
@@ -81,9 +82,9 @@ export class Renderer3D {
     mount.appendChild(this.renderer.domElement);
 
     this.textures = {
-      floor: this.loadTexture(dungeonFloor01Url, 24, 24),
+      floor: this.loadTexture(dungeonStoneFloorLayout01Url, 10, 10),
       ceiling: this.loadTexture(dungeonFloor02Url, 24, 24),
-      wall: this.loadTexture(dungeonWallUrl, 8, 2),
+      walls: [this.loadTexture(dungeonWallBrick01Url, 6, 2), this.loadTexture(dungeonWallTorch01Url, 2, 1)],
       doorClosed: this.loadSpriteTexture(doorClosedUrl),
       doorOpen: this.loadSpriteTexture(doorOpenUrl),
       keyFrames: [this.loadSpriteTexture(key1Url), this.loadSpriteTexture(key2Url), this.loadSpriteTexture(key3Url), this.loadSpriteTexture(key4Url)],
@@ -419,13 +420,6 @@ export class Renderer3D {
       metalness: 0,
       side: THREE.DoubleSide
     });
-    const wallMat = new THREE.MeshStandardMaterial({
-      map: this.textures.wall,
-      color: "#ffffff",
-      roughness: 0.92,
-      metalness: 0.03
-    });
-
     const ROOM_W = 56;
     const ROOM_D = 56;
     const COR_W = 18;
@@ -451,12 +445,12 @@ export class Renderer3D {
     this.addRectFloor(COR1, 0, COR_D, COR_W, ROOF_Y, ceilingMat, Math.PI / 2);
     this.addRectFloor(COR2, 0, COR_D, COR_W, ROOF_Y, ceilingMat, Math.PI / 2);
 
-    this.addRoomWalls(C1, ROOM_W, ROOM_D, WALL_H, WALL_T, wallMat, false, true);
-    this.addRoomWalls(C2, ROOM_W, ROOM_D, WALL_H, WALL_T, wallMat, true, true);
-    this.addRoomWalls(C3, ROOM_W, ROOM_D, WALL_H, WALL_T, wallMat, true, false);
+    this.addRoomWalls(C1, ROOM_W, ROOM_D, WALL_H, WALL_T, false, true);
+    this.addRoomWalls(C2, ROOM_W, ROOM_D, WALL_H, WALL_T, true, true);
+    this.addRoomWalls(C3, ROOM_W, ROOM_D, WALL_H, WALL_T, true, false);
 
-    this.addCorridorWalls(COR1, COR_D, COR_W, WALL_H, WALL_T, wallMat);
-    this.addCorridorWalls(COR2, COR_D, COR_W, WALL_H, WALL_T, wallMat);
+    this.addCorridorWalls(COR1, COR_D, COR_W, WALL_H, WALL_T);
+    this.addCorridorWalls(COR2, COR_D, COR_W, WALL_H, WALL_T);
   }
 
   private addRectFloor(
@@ -480,7 +474,6 @@ export class Renderer3D {
     depth: number,
     height: number,
     thickness: number,
-    mat: THREE.Material,
     openWest: boolean,
     openEast: boolean
   ): void {
@@ -489,32 +482,32 @@ export class Renderer3D {
     const gap = 10;
     const sideSeg = (depth - gap) / 2;
 
-    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), mat);
+    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(0));
     north.position.set(cx, height / 2, -halfD);
-    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), mat);
+    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(1));
     south.position.set(cx, height / 2, halfD);
     this.scene.add(north, south);
 
     if (openWest) {
-      const w1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), mat);
-      const w2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), mat);
+      const w1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(2));
+      const w2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(3));
       w1.position.set(cx - halfW, height / 2, -((gap / 2) + sideSeg / 2));
       w2.position.set(cx - halfW, height / 2, (gap / 2) + sideSeg / 2);
       this.scene.add(w1, w2);
     } else {
-      const west = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), mat);
+      const west = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(4));
       west.position.set(cx - halfW, height / 2, 0);
       this.scene.add(west);
     }
 
     if (openEast) {
-      const e1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), mat);
-      const e2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), mat);
+      const e1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(5));
+      const e2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, sideSeg), this.pickWallMaterial(6));
       e1.position.set(cx + halfW, height / 2, -((gap / 2) + sideSeg / 2));
       e2.position.set(cx + halfW, height / 2, (gap / 2) + sideSeg / 2);
       this.scene.add(e1, e2);
     } else {
-      const east = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), mat);
+      const east = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, depth), this.pickWallMaterial(7));
       east.position.set(cx + halfW, height / 2, 0);
       this.scene.add(east);
     }
@@ -525,15 +518,24 @@ export class Renderer3D {
     width: number,
     depth: number,
     height: number,
-    thickness: number,
-    mat: THREE.Material
+    thickness: number
   ): void {
     const halfD = depth / 2;
-    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), mat);
+    const north = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(8));
     north.position.set(cx, height / 2, -halfD);
-    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), mat);
+    const south = new THREE.Mesh(new THREE.BoxGeometry(width, height, thickness), this.pickWallMaterial(9));
     south.position.set(cx, height / 2, halfD);
     this.scene.add(north, south);
+  }
+
+  private pickWallMaterial(seed: number): THREE.Material {
+    const texture = this.textures.walls[seed % this.textures.walls.length];
+    return new THREE.MeshStandardMaterial({
+      map: texture,
+      color: "#ffffff",
+      roughness: 0.92,
+      metalness: 0.03
+    });
   }
 
   private loadTexture(url: string, repeatX: number, repeatY: number): THREE.Texture {
