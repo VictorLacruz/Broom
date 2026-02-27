@@ -20,6 +20,10 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
       continue;
     }
 
+    const render = ctx.enemyMeshes.get(entity);
+    const prevX = transform.x;
+    const prevZ = transform.z;
+    const attackTimer = Math.max(0, (render?.mesh.userData.attackAnimTimer as number | undefined) ?? 0);
     combat.timer = Math.max(0, combat.timer - delta);
     if (enemy.burnTimer > 0) {
       enemy.burnTimer -= delta;
@@ -38,7 +42,24 @@ export const runEnemyAISystem = (ctx: GameContext, delta: number): void => {
         playerHealth.current -= enemy.type.damage * 0.35;
       }
       combat.timer = combat.cooldown;
+      if (render) {
+        render.mesh.userData.attackAnimTimer = 0.28;
+      }
     }
+
+    const moved = Math.hypot(transform.x - prevX, transform.z - prevZ) > 0.001;
+    let animState: "idle" | "run" | "attack" = moved ? "run" : "idle";
+    const nextAttackTimer = Math.max(0, attackTimer - delta);
+    if (render) {
+      render.mesh.userData.attackAnimTimer = nextAttackTimer;
+    }
+    if (nextAttackTimer > 0) {
+      animState = "attack";
+    }
+    const setEnemyAnimState = render?.mesh.userData.setEnemyAnimState as
+      | ((state: "idle" | "run" | "attack") => void)
+      | undefined;
+    setEnemyAnimState?.(animState);
   }
   ctx.runtime.shieldDurability = shield.durability;
 };

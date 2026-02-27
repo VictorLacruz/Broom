@@ -15,7 +15,9 @@ export const runVisualSyncSystem = (ctx: GameContext, time: number): void => {
   }
 
   if (ctx.internals.keyMesh && !ctx.runtime.playerHasKey) {
-    ctx.internals.keyMesh.rotation.y += 0.02;
-    ctx.internals.keyMesh.position.y = 1.2 + Math.sin(time * 2) * 0.2;
+    const animateKey = ctx.internals.keyMesh.userData.animateKeySprite as ((time: number) => void) | undefined;
+    animateKey?.(time);
   }
+
+  ctx.renderer.setDoorOpen(ctx.runtime.playerHasKey);
 };

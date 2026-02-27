@@ -50,7 +50,8 @@ export class BroomGame {
         dashTimer: 0,
         swingIndex: 0,
         keyEntity: 0,
-        keyMesh: null
+        keyMesh: null,
+        doorMesh: null
       },
       runtime: {
         levelIndex: 0,
@@ -111,4 +112,3 @@ export class BroomGame {
     runVisualSyncSystem(this.context, time);
   }
 }
-

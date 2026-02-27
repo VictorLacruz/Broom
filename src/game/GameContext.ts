@@ -20,7 +20,8 @@ export interface GameInternals {
   dashTimer: number;
   swingIndex: number;
   keyEntity: number;
-  keyMesh: THREE.Mesh | null;
+  keyMesh: THREE.Object3D | null;
+  doorMesh: THREE.Object3D | null;
 }
 
 export interface GameContext {

@@ -22,6 +22,22 @@ Sprites enemigos 2D:
   - `goblin` -> `goblin`
 - Archivos activos:
   - `src/assets/sprites/enemies/wizard/wizard_idle.png`
+  - `src/assets/sprites/enemies/wizard/wizard_run.png`
+  - `src/assets/sprites/enemies/wizard/wizard_attack.png`
   - `src/assets/sprites/enemies/skeleton/*.png`
   - `src/assets/sprites/enemies/knight/*.png`
   - `src/assets/sprites/enemies/goblin/goblin_sheet.png`
+
+Llave y puerta:
+- Fuente: `Finding Doory.zip`
+- Archivos activos:
+  - `src/assets/sprites/items/keyfly_*.jpeg`
+  - `src/assets/sprites/items/door_closed.jpeg`
+  - `src/assets/sprites/items/door_open.jpeg`
+
+Entorno dungeon:
+- Fuente: `ModularDungeonPack.zip`
+- Archivos activos:
+  - `src/assets/textures/dungeon/floor01.png`
+  - `src/assets/textures/dungeon/floor02.png`
+  - `src/assets/textures/dungeon/brick_wall01.png`
